@@ -37,7 +37,7 @@ class IwlsApiConnector:
         print(f'From cache: {r.from_cache}')
         print(f'Created: {r.created_at}')
         print(f'Expires: {r.expires}')
-
+ 
         r.raise_for_status()
         data_json = r.json()
         df = pd.DataFrame.from_dict(data_json)
