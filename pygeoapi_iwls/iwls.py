@@ -221,3 +221,4 @@ class IwlsApiConnector:
             json.dump(geojson, f, ensure_ascii=False, indent=4)
         
         return geojson
+
