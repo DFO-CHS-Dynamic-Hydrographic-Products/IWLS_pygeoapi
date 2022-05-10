@@ -101,6 +101,7 @@ class IwlsApiConnector:
                             'wlo' = Observed Water Levels
                             'wlp' = Tidal Predictions
                             'wlf' = Quality Control Forecast
+                            'wlf-spine' = SPINE Forcast
         returns: series of pairs of time stamps and water level values
 
         """
@@ -162,10 +163,11 @@ class IwlsApiConnector:
         station_id = self.id_from_station_code(station_code)
         url = 'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/' + station_id + '/data'
 
-        # Get Observations, Predictions and Forecasts
+        # Get Observations, Predictions, Forecasts and SPINE
         wlo = self._get_timeseries(url,time_ranges_strings,'wlo')
         wlp = self._get_timeseries(url,time_ranges_strings,'wlp')
         wlf = self._get_timeseries(url,time_ranges_strings,'wlf')
+        spine = self._get_timeseries(url,time_ranges_strings,'wlf-spine')
 
         # Build Geojson feature for station
         station_geojson = {}
@@ -180,6 +182,7 @@ class IwlsApiConnector:
             'wlo':json.loads(wlo)['value'],
             'wlp':json.loads(wlp)['value'],
             'wlf':json.loads(wlf)['value'],
+            'spine':json.loads(spine)['value'],
             }  
 
         return station_geojson
@@ -218,7 +221,3 @@ class IwlsApiConnector:
             json.dump(geojson, f, ensure_ascii=False, indent=4)
         
         return geojson
-
-
-api = IwlsApiConnector()
-print(api.info)

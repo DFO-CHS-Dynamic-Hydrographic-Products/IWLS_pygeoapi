@@ -391,31 +391,35 @@ class S104Generator():
         df_wlp = self._gen_data_table(s104_data,'wlp')
         df_wlo = self._gen_data_table(s104_data,'wlo')
         df_wlf = self._gen_data_table(s104_data,'wlf')
+        df_spine = self._gen_data_table(s104_data,'spine')
 
         # Create Trend Flags tables
         df_wlf_trend = self._gen_S104_trends(df_wlf)
         df_wlo_trend = self._gen_S104_trends(df_wlo)
         df_wlp_trend = self._gen_S104_trends(df_wlp)
+        df_spine_trend = self._gen_S104_trends(df_spine)
 
-        trend = {'wlp':df_wlp_trend,'wlo':df_wlo_trend,'wlf':df_wlf_trend}
+        trend = {'wlp':df_wlp_trend,'wlo':df_wlo_trend,'wlf':df_wlf_trend,'spine':df_spine_trend}
 
         # Create Positions Dict 
         df_wlp_position = self._gen_positions(df_wlp)
         df_wlo_position = self._gen_positions(df_wlo)
         df_wlf_position = self._gen_positions(df_wlf)
+        df_spine_position = self._gen_positions(df_spine)
 
-        position = {'wlp':df_wlp_position,'wlo':df_wlo_position,'wlf':df_wlf_position}
+        position = {'wlp':df_wlp_position,'wlo':df_wlo_position,'wlf':df_wlf_position,'spine':df_spine_position}
         
         # Calculate min and max values for file
-        dataset_max = max([df_wlp.max().max(),df_wlf.max().max(),df_wlo.max().max()])
-        dataset_min = min([df_wlp.min().min(),df_wlf.min().min(),df_wlo.min().min()])
+        dataset_max = max([df_wlp.max().max(),df_wlf.max().max(),df_wlo.max().max(),df_spine.max().max()])
+        dataset_min = min([df_wlp.min().min(),df_wlf.min().min(),df_wlo.min().min(),df_spine.min().min()])
 
         # Replace NaN with fill value (-9999)
         df_wlp = df_wlp.fillna(-9999)
         df_wlo = df_wlo.fillna(-9999)
         df_wlf = df_wlf.fillna(-9999)
+        df_spine = df_spine.fillna(-9999)
 
-        wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf}
+        wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf, 'spine':df_spine}
 
         # List available data sets
         dataset_types = []
@@ -425,6 +429,8 @@ class S104Generator():
             dataset_types.append('wlf')
         if not df_wlp.empty:
             dataset_types.append('wlp')
+        if not df_spine.empty:
+            dataset_types.append('spine')
 
         # Open and update file
         with h5py.File(s104_path, 'r+') as h5_file:

@@ -85,11 +85,3 @@ class ProviderIwls(BaseProvider):
         result = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
 
         return result
-
-
-#api = IwlsApiConnector()
-#victoria = api.get_station_data('07120', 'all','2021-09-14T02:00:00Z','2021-09-14T19:00:00Z')
-#data = api.get_timeseries_by_boundary('2021-07-29T16:00:00Z','2021-07-29T22:00:00Z',[-123.28,49.07,-123.01,49.35])
-#http://localhost:5000/collections/iwls/items?limit=10&bbox=-123.28,49.07,-123.01,49.35&q=%272021-07-29T16:00:00Z%27,%272021-07-29T22:00:00Z%27&f=json
-
-#http://localhost:5000/collections/iwls/items?limit=10&bbox=-123.28,49.07,-123.01,49.35&datetime="2021-07-29T16:00:00Z","2021-07-29T22:00:00Z"&f=json
