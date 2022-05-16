@@ -7,3 +7,7 @@ curl -X POST "http://localhost:5000/processes/s104/execution" -H "accept: applic
 #http://localhost:5000/collections/iwls/items?limit=10&bbox=-123.28,49.07,-123.01,49.35&q=%272021-07-29T16:00:00Z%27,%272021-07-29T22:00:00Z%27&f=json
 
 #http://localhost:5000/collections/iwls/items?limit=10&bbox=-123.28,49.07,-123.01,49.35&datetime="2021-07-29T16:00:00Z","2021-07-29T22:00:00Z"&f=json
+
+# curl -X POST "http://localhost:5000/processes/s104/execution" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"inputs": {\"bbox"\: \"-123.28,49.07,-123.01,49.35"\,\"end_time"\: \"2021-12-06T23:00:00Z"\,\"start_time"\: \"2021-12-06T00:00:00Z"\}}"
+# curl -X POST "http://localhost:5000/processes/s104/execution" -H "accept: application/json" -H "Content-Type: application/json" -d {"inputs": {"bbox":"-123.28,49.07,-123.01,49.35","end_time":"2021-12-06T23:00:00Z","start_time":"2021-12-06T00:00:00Z"}} > s104.zip
+# curl -X POST "http://localhost:5000/processes/s104/execution" -H "accept: application/json" -H "Content-Type: application/json" -d "{\"inputs\": {\"bbox\":\"-123.28,49.07,-123.01,49.35\",\"end_time\":\"2021-12-06T23:00:00Z\",\"start_time\":\"2021-12-06T00:00:00Z\"}}" > s104.zip
