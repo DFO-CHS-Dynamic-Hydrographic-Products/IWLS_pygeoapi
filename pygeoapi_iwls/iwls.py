@@ -102,6 +102,8 @@ class IwlsApiConnector:
                             'wlp' = Tidal Predictions
                             'wlf' = Quality Control Forecast
                             'wlf-spine' = SPINE Forcast
+                            'wcs1' = Observed Surface Currents Speed
+                            'wcd1' = Observed Surface Currents Direction
         returns: series of pairs of time stamps and water level values
 
         """
@@ -125,13 +127,14 @@ class IwlsApiConnector:
 
                 return series_data.to_json(date_format='iso')
 
-    def get_station_data(self,station_code,start_time,end_time):
+    def get_station_data(self,station_code,start_time,end_time, dtype='wl'):
         """
         Get water level timeseries (observations, predictions, forecasts) for a single station
         :param station_code: five digits station identifier (string)
         :param  time_series_code: Code of the timeseries (wlo,wlp, wlf, all); all return (wlo,wlp,wlf) tuple for every timestamps
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
+        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents)
         :returns: GeoJSON containing requested station metadata and available water level time series for specified time range
         """
         
@@ -163,31 +166,58 @@ class IwlsApiConnector:
         station_id = self.id_from_station_code(station_code)
         url = 'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/' + station_id + '/data'
 
-        # Get Observations, Predictions, Forecasts and SPINE
-        wlo = self._get_timeseries(url,time_ranges_strings,'wlo')
-        wlp = self._get_timeseries(url,time_ranges_strings,'wlp')
-        wlf = self._get_timeseries(url,time_ranges_strings,'wlf')
-        spine = self._get_timeseries(url,time_ranges_strings,'wlf-spine')
+        # Query Correct data type, raise error if invalid
+        # Water Levels
+        if dtype == 'wl':
+            # Get Observations, Predictions, Forecasts and SPINE
+            wlo = self._get_timeseries(url,time_ranges_strings,'wlo')
+            wlp = self._get_timeseries(url,time_ranges_strings,'wlp')
+            wlf = self._get_timeseries(url,time_ranges_strings,'wlf')
+            spine = self._get_timeseries(url,time_ranges_strings,'wlf-spine')
 
+            # Build Geojson feature for station
+            station_geojson = {}
+            station_geojson['type'] = 'Feature'
+            station_geojson['id'] = metadata['code']
+            station_geojson["geometry"] = {
+                "type": "Point",
+                "coordinates":[metadata['longitude'],metadata['latitude']],
+                }
+            station_geojson['properties'] = {
+                'metadata':metadata,
+                'wlo':json.loads(wlo)['value'],
+                'wlp':json.loads(wlp)['value'],
+                'wlf':json.loads(wlf)['value'],
+                'spine':json.loads(spine)['value'],
+                }
+        # Surface Currents
+        elif dtype == 'wcs':
+            #Get Surface Currents observations (speed and direction)
+            wcs = self._get_timeseries(url,time_ranges_strings,'wcs1')
+            wcd = self._get_timeseries(url,time_ranges_strings,'wcd1')
         # Build Geojson feature for station
-        station_geojson = {}
-        station_geojson['type'] = 'Feature'
-        station_geojson['id'] = metadata['code']
-        station_geojson["geometry"] = {
-            "type": "Point",
-            "coordinates":[metadata['longitude'],metadata['latitude']],
-            }
-        station_geojson['properties'] = {
-            'metadata':metadata,
-            'wlo':json.loads(wlo)['value'],
-            'wlp':json.loads(wlp)['value'],
-            'wlf':json.loads(wlf)['value'],
-            'spine':json.loads(spine)['value'],
-            }  
+            station_geojson = {}
+            station_geojson['type'] = 'Feature'
+            station_geojson['id'] = metadata['code']
+            station_geojson["geometry"] = {
+                "type": "Point",
+                "coordinates":[metadata['longitude'],metadata['latitude']],
+                }
+            station_geojson['properties'] = {
+                'metadata':metadata,
+                'wcs':json.loads(wcs)['value'],
+                'wcd':json.loads(wcd)['value'],
+                }
+
+
+
+        # Raise Error if  invalid data type
+        else:
+            raise ValueError('Invalid data type. Accepted values are "wl" for water levels and "wcs" for surface currents')       
 
         return station_geojson
 
-    def get_timeseries_by_boundary(self,start_time,end_time,bbox,limit=10, startindex=0):
+    def get_timeseries_by_boundary(self,start_time,end_time,bbox,limit=10, startindex=0, dtype='wl'):
         """
         Do a series of queries to the IWLS API and return data
         within provided time frame and bounding box
@@ -197,6 +227,7 @@ class IwlsApiConnector:
         :param limit: Maximum number of station to query
         :param time_limit: Maximum time that can be requested, in hours
         :param startindex: starting index for query
+        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents)
         :returns: GeoJson Feature Collection
         """
         # use summary metadata info to find stations within request
@@ -208,14 +239,29 @@ class IwlsApiConnector:
         stations_list = stations_list[startindex:end_index]
 
 
+
         # Query stations and populate Geojson feature collection
         geojson = {}
         geojson ['type'] = 'FeatureCollection'
         features = []
-        for stn in stations_list.code.iteritems():
-            feature = self.get_station_data(stn[1],start_time,end_time)
-            features.append(feature)
-        geojson ['features'] = features
+
+        # Query Correct data type, raise error if invalid
+
+        if dtype == 'wl':
+            for stn in stations_list.code.iteritems():
+                feature = self.get_station_data(stn[1],start_time,end_time)
+                features.append(feature)
+            geojson ['features'] = features
+        
+        elif dtype == 'wcs':
+            for stn in stations_list.code.iteritems():
+                feature = self.get_station_data(stn[1],start_time,end_time,'wcs')
+                features.append(feature)
+            geojson ['features'] = features
+
+        else:
+            raise ValueError('Invalid data type. Accepted values are "wl" for water levels and "wcs" for surface currents ')
+        
         
         with open('test.json', 'w', encoding='utf-8') as f:
             json.dump(geojson, f, ensure_ascii=False, indent=4)
