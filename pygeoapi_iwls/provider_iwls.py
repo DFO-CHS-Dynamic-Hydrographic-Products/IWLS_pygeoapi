@@ -17,13 +17,20 @@ import uuid
 
 class ProviderIwls(BaseProvider):
     """
-    Provider class for iwls data
+    Provider abstract base class for iwls data
+    Used as parent by ProviderIwlsWaterLevels and ProviderIwlsCurrents
     """
     def __init__(self, provider_def):
         """Inherit from parent class"""
         super().__init__(provider_def)
 
+    def _provider_get_station_data(self):
+        # Method needs to be implemented by child class
+        raise NotImplementedError("Must override _provider_get_station_data")
 
+    def _provider_get_timeseries_by_boundary(self):
+        # Method needs to be implemented by child class
+        raise NotImplementedError("Must override _provider_get_timeseries_by_boundary")
 
     def get(self, identifier, **kwargs):
         """
@@ -42,7 +49,7 @@ class ProviderIwls(BaseProvider):
         end_time = tomorrow.strftime('%Y-%m-%dT%H:%M:%SZ')
         start_time = yesterday.strftime('%Y-%m-%dT%H:%M:%SZ')
         # Pass query to IWLS API
-        result = api.get_station_data(identifier,start_time,end_time)
+        result = self._provider_get_station_data(identifier,start_time,end_time)
 
         return result
 
@@ -82,7 +89,43 @@ class ProviderIwls(BaseProvider):
         # Establish connection to IWLS API
         api = IwlsApiConnector()
         # Pass query to IWLS API
-        result = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
+        result = self._provider_get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
 
         return result
 
+class ProviderIwlsWaterLevels(ProviderIwls):
+    """
+    Provider class for iwls Water Level data
+    """
+    def __init__(self, provider_def):
+        """Inherit from parent class"""
+        super().__init__()
+
+    def _provider_get_station_data(self,identifier,start_time,end_time):
+        """Used by Get Method"""
+        station_data = api.get_station_data(identifier,start_time,end_time)
+        return station_data
+
+    def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
+        """Used by Query Method"""
+        timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
+        return timeseries
+
+
+class ProviderIwlsCurrents(ProviderIwls):
+    """
+    Provider class for iwls Water Level Currents
+    """
+    def __init__(self, provider_def):
+        """Inherit from parent class"""
+        super().__init__()
+
+    def _provider_get_station_data(self,identifier,start_time,end_time):
+        """Used by Get Method"""
+        station_data = api.get_station_data(identifier,start_time,end_time, dtype='wcs')
+        return station_data
+
+    def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
+        """Used by Query Method"""
+        timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex, dtype='wcs')
+        return timeseries
