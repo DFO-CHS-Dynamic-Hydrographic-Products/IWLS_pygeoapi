@@ -102,12 +102,28 @@ class ProviderIwlsWaterLevels(ProviderIwls):
         super().__init__()
 
     def _provider_get_station_data(self,identifier,start_time,end_time):
-        """Used by Get Method"""
+        """        
+        Used by Get Method
+        :param identifier: station ID
+        :param start_time: Start time (ISO ISO 8601)
+        :param end_time: End time (ISO ISO 8601)
+        
+        :returns: GeoJSON feature
+        """
         station_data = api.get_station_data(identifier,start_time,end_time)
         return station_data
 
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
-        """Used by Query Method"""
+        """        
+        Used by Query Method
+        :param start_time: Start time (ISO ISO 8601)
+        :param end_time: End time (ISO ISO 8601)
+        :param bbox: bounding box [minx,miny,maxx,maxy]
+        :param limit: number of records to return (default 10)
+        :param startindex: starting record to return (default 0)
+
+        :returns: dict of 0..n GeoJSON features
+        """
         timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
         return timeseries
 
@@ -121,11 +137,27 @@ class ProviderIwlsCurrents(ProviderIwls):
         super().__init__()
 
     def _provider_get_station_data(self,identifier,start_time,end_time):
-        """Used by Get Method"""
+        """
+        Used by Get Method
+        :param identifier: station ID
+        :param start_time: Start time (ISO ISO 8601)
+        :param end_time: End time (ISO ISO 8601)
+
+        :returns: GeoJSON feature
+        """
+
         station_data = api.get_station_data(identifier,start_time,end_time, dtype='wcs')
         return station_data
 
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
-        """Used by Query Method"""
+        """
+        Used by Query Method
+        :start_time: Start time (ISO ISO 8601)
+        :end_time: End time (ISO ISO 8601)
+        :param bbox: bounding box [minx,miny,maxx,maxy]
+        :param limit: number of records to return (default 10)
+        :param startindex: starting record to return (default 0)
+        :returns: dict of 0..n GeoJSON features
+        """
         timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex, dtype='wcs')
         return timeseries
