@@ -105,8 +105,8 @@ class ProviderIwlsWaterLevels(ProviderIwls):
         """        
         Used by Get Method
         :param identifier: station ID
-        :param start_time: Start time (ISO ISO 8601)
-        :param end_time: End time (ISO ISO 8601)
+        :param start_time: Start time (ISO 8601)
+        :param end_time: End time (ISO 8601)
         
         :returns: GeoJSON feature
         """
@@ -116,8 +116,8 @@ class ProviderIwlsWaterLevels(ProviderIwls):
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
         """        
         Used by Query Method
-        :param start_time: Start time (ISO ISO 8601)
-        :param end_time: End time (ISO ISO 8601)
+        :param start_time: Start time (ISO 8601)
+        :param end_time: End time (ISO 8601)
         :param bbox: bounding box [minx,miny,maxx,maxy]
         :param limit: number of records to return (default 10)
         :param startindex: starting record to return (default 0)
@@ -140,8 +140,8 @@ class ProviderIwlsCurrents(ProviderIwls):
         """
         Used by Get Method
         :param identifier: station ID
-        :param start_time: Start time (ISO ISO 8601)
-        :param end_time: End time (ISO ISO 8601)
+        :param start_time: Start time (ISO 8601)
+        :param end_time: End time (ISO 8601)
 
         :returns: GeoJSON feature
         """
@@ -152,8 +152,8 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex):
         """
         Used by Query Method
-        :start_time: Start time (ISO ISO 8601)
-        :end_time: End time (ISO ISO 8601)
+        :start_time: Start time (ISO 8601)
+        :end_time: End time (ISO 8601)
         :param bbox: bounding box [minx,miny,maxx,maxy]
         :param limit: number of records to return (default 10)
         :param startindex: starting record to return (default 0)
