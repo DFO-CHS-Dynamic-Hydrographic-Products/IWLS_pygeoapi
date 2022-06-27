@@ -268,3 +268,7 @@ class IwlsApiConnector:
         
         return geojson
 
+api = IwlsApiConnector()
+data = api.get_timeseries_by_boundary('2022-06-19T16:00:00Z','2022-06-19T22:00:00Z',[-123.28,49.07,-123.01,49.35],dtype='wcs')
+with open('s111_test.json', 'w') as f:
+    json.dump(data, f,indent=4)
