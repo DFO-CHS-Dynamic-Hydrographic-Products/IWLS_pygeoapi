@@ -16,7 +16,8 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         super().__init__(json_path, folder_path,template_path)
         # overide file type from base class
         self.file_type = '104'
-    
+        self.product_id = 'WaterLevel'
+
     def _get_flags(self,x):
         """
         Transform slope value to trend flag:
@@ -46,7 +47,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
             timestamps_per_hour = int(3600 // interval)
             slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(0,timestamps_per_hour),x)[0])
             df_trend = slope_values.apply(np.vectorize(self._get_flags))
-            return df_trend 
+            return df_trend
         else:
             return pd.DataFrame()
 
@@ -82,8 +83,8 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
 
         wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf, 'spine':df_spine}
 
-        
-        # Create Positions Dict 
+
+        # Create Positions Dict
         df_wlp_position = self._gen_positions(df_wlp)
         df_wlo_position = self._gen_positions(df_wlo)
         df_wlf_position = self._gen_positions(df_wlf)
@@ -105,7 +106,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
 
         return  data_arrays
 
-        
+
     def _update_product_specific_general_metadata(self,h5_file):
         """
         Update product specific (S-104) general metadata.
@@ -131,7 +132,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         # pickPriorityType = no changes from template
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
-            
+
     def _create_groups(self,h5_file,data):
         """
         Create data groups for each station
@@ -219,4 +220,3 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
             lat_lon = list(zip(lat, lon))
             geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
             geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
-

@@ -13,6 +13,7 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         super().__init__(json_path, folder_path,template_path)
         # overide file type from base class
         self.file_type = '111'
+        self.product_id = 'SurfaceCurrent'
 
 
     def _format_data_arrays(self,data):
@@ -31,7 +32,7 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         # Replace NaN values
         wcs = wcs.fillna(-1)
         wcd = wcd.fillna(-1)
-        
+
         position = self._gen_positions(wcs)
         data_arrays = {'wcs':wcs,'wcd':wcd,'position':position,'max':dataset_max,'min':dataset_min}
 
@@ -58,16 +59,16 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         # dimension, No change from template
         # horizontalPositionUncertainty, currently unassessed
         # maxDatasetCurrentSpeed
-        h5_file['SurfaceCurrent'].attrs.modify('maxDatasetCurrentSpeed',data['max'])
+        h5_file[self.product_id].attrs.modify('maxDatasetCurrentSpeed',data['max'])
         # minDatasetCurrentSpeed
-        h5_file['SurfaceCurrent'].attrs.modify('minDatasetCurrentSpeed',data['min'])
+        h5_file[self.product_id].attrs.modify('minDatasetCurrentSpeed',data['min'])
         # typeOfCurrentData, No change from template
         # verticalPositionUncertainty, currently unassessed
         # Number of Feature Instances
         # ToDo: numInstances is proposed for S111 1.1.1,
         # create here for now and move to template when 1.1.1 is finalized
-        h5_file['SurfaceCurrent'].attrs.create('numInstances',data['wcs'].shape[1])
-        
+        h5_file[self.product_id].attrs.create('numInstances',data['wcs'].shape[1])
+
 
     def _create_groups(self,h5_file,data):
         """
@@ -95,7 +96,7 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         group_counter = 1
         for i in range(num_groups):
             # Create Group
-            group_path = 'SurfaceCurrent/SurfaceCurrent.01' + '/Group_' + str(group_counter).zfill(3)
+            group_path = '{product_id}/{product_id}.01/Group_{group_no}'.format(product_id=self.product_id, group_no= str(group_counter).zfill(3))
             group = h5_file.create_group(group_path)
             group_counter += 1
             ### Create Group Metadata ##
@@ -120,4 +121,3 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         lat_lon = list(zip(lat, lon))
         geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
         geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
-

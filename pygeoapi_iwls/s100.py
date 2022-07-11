@@ -61,7 +61,7 @@ class S100GeneratorDCF8():
                 if (cell_min_lat < item['properties']['metadata']['latitude'] < cell_max_lat) and (cell_min_lon < item['properties']['metadata']['longitude'] < cell_max_lon):
                    cell_data_list.append(item)
 
-            # Generate S100 file if data exist within cell      
+            # Generate S100 file if data exist within cell
             if len(cell_data_list) != 0:
                 name = i['properties']['cell']
                 filename = self.file_type + name[0:2] + '00' + name[2] + name[4:] + '.h5'
@@ -88,7 +88,7 @@ class S100GeneratorDCF8():
             self._update_feature_metadata(h5_file,data_arrays)
             ### Create and populate group arrays ###
             self._create_groups(h5_file,data_arrays)
-        
+
     def _format_data_arrays(self):
         """
         product specific pre formating to convert API response to valid
@@ -161,7 +161,7 @@ class S100GeneratorDCF8():
         lat = [float(i.split("$")[2]) for i in df.columns]
         lon = [float(i.split("$")[3]) for i in df.columns]
         position = {'lat':lat, 'lon':lon}
-        return position 
+        return position
 
     def _update_product_specific_general_metadata(self,h5_file):
         """
@@ -184,6 +184,33 @@ class S100GeneratorDCF8():
         """
         # TO DO: create common function for base class when S-111 1.1.1 is finalized
         # For now, must be implemented by child class
+        num_times = len(instance_wl)
+        time_record_interval = int((instance_wl.index[1] - instance_wl.index[0]).total_seconds())
+        start_date_time = instance_wl.index[-0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        end_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        num_groups = instance_wl.shape[1]
 
-        raise NotImplementedError('Must override _create_groups')
-
+        group_counter = 1
+        for i in range(num_groups):
+            # Create Group
+            group_path = '{product_id}/{product_id}.01/Group_{group_no}'.format(product_id=self.product_id, group_no= str(group_counter).zfill(3))
+            group = h5_file.create_group(group_path)
+            group_counter += 1
+            ### Create Group Metadata ##
+            group.attrs.create('endDateTime', end_time)
+            group.attrs.create('numberOfTimes', instance_wl.shape[0])
+            group.attrs.create('startDateTime', start_date_time)
+            stn_id = instance_wl.columns[i].split("$")[0]
+            group.attrs.create('stationIdentification', stn_id)
+            stn_name = instance_wl.columns[i].split("$")[1]
+            group.attrs.create('stationName', stn_name)
+            group.attrs.create('timeIntervalIndex', 1)
+            group.attrs.create('timeRecordInterval', time_record_interval)
+        ### Create Positioning Group ###
+        positioning_path = '{product_id}/{product_id}.01/Positioning'.format(product_id=self.product_id)
+        positioning = h5_file.create_group(positioning_path)
+        lat = instance_position['lat']
+        lon = instance_position['lon']
+        lat_lon = list(zip(lat, lon))
+        geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
+        geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
