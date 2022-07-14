@@ -9,6 +9,9 @@ import pandas as pd
 import numpy as np
 import h5py
 
+# Import utility script
+import s100_util
+
 class S100GeneratorDCF8():
     """
     abstract base class for generating S-100 Data Coding Format 8 (Stationwise arrays)
@@ -25,6 +28,7 @@ class S100GeneratorDCF8():
         self.folder_path = folder_path
         self.json_path = json_path
         self.template_path = template_path
+        self.dataset_names = None
         # Overide with correct layer in child class
         self.file_type = '100'
         # Raise error if incorect layer type is passed
@@ -146,9 +150,9 @@ class S100GeneratorDCF8():
                 stn_data.index = pd.to_datetime(stn_data.index)
                 data_list.append(stn_data)
         if data_list:
-            df = pd.concat(data_list, axis=1)
+            return pd.concat(data_list, axis=1)
         else:
-            df = pd.DataFrame()
+            return pd.DataFrame()
 
         return df
 
@@ -177,40 +181,52 @@ class S100GeneratorDCF8():
         """
         raise NotImplementedError('Must override _update_feature_metadata')
 
-    def _create_groups(self,h5_file,data):
+    def _create_attributes(self, h5_file, group, datasets):
         """
-        Create data groups for each station
-        Must be implemented by child class
-        """
-        # TO DO: create common function for base class when S-111 1.1.1 is finalized
-        # For now, must be implemented by child class
-        num_times = len(instance_wl)
-        time_record_interval = int((instance_wl.index[1] - instance_wl.index[0]).total_seconds())
-        start_date_time = instance_wl.index[-0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
-        end_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
-        num_groups = instance_wl.shape[1]
+        Create data attributes for each station
 
-        group_counter = 1
-        for i in range(num_groups):
+        """
+        assert self.dataset_names is not None, \
+            "Must invoke S104 or S111 class to get the dataset names"
+
+        ### Create Instance Metadata ###
+        num_times = len(datasets[0])
+        time_record_interval = int((datasets[0].index[1] - datasets[0].index[0]).total_seconds())
+        start_datetime = datasets[0].index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        end_datetime = datasets[0].index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        num_groups = datasets[0].shape[1]
+
+        s100_util.create_modify_attribute(group, 'numberOfTimes', num_times)
+        s100_util.create_modify_attribute(group, 'timeRecordInterval', time_record_interval)
+        s100_util.create_modify_attribute(group, 'dateTimeOfFirstRecord', start_datetime)
+        s100_util.create_modify_attribute(group, 'dateTimeOfLastRecord', end_datetime)
+        s100_util.create_modify_attribute(group, 'numGRP', num_groups)
+
+        for i in range(1, num_groups):
             # Create Group
-            group_path = '{product_id}/{product_id}.01/Group_{group_no}'.format(product_id=self.product_id, group_no= str(group_counter).zfill(3))
+            group_path = '{product_id}/{product_id}.01/Group_{group_no}'.format(
+                product_id=self.product_id, group_no= str(group_counter).zfill(3)
+            )
             group = h5_file.create_group(group_path)
-            group_counter += 1
+
             ### Create Group Metadata ##
-            group.attrs.create('endDateTime', end_time)
-            group.attrs.create('numberOfTimes', instance_wl.shape[0])
-            group.attrs.create('startDateTime', start_date_time)
-            stn_id = instance_wl.columns[i].split("$")[0]
+            group.attrs.create('endDateTime', end_datetime)
+            group.attrs.create('numberOfTimes', datasets[0].shape[0])
+            group.attrs.create('startDateTime', start_datetime)
+            stn_id = datasets[0].columns[i].split("$")[0]
             group.attrs.create('stationIdentification', stn_id)
-            stn_name = instance_wl.columns[i].split("$")[1]
+            stn_name = datasets[0].columns[i].split("$")[1]
             group.attrs.create('stationName', stn_name)
             group.attrs.create('timeIntervalIndex', 1)
             group.attrs.create('timeRecordInterval', time_record_interval)
-        ### Create Positioning Group ###
-        positioning_path = '{product_id}/{product_id}.01/Positioning'.format(product_id=self.product_id)
-        positioning = h5_file.create_group(positioning_path)
-        lat = instance_position['lat']
-        lon = instance_position['lon']
-        lat_lon = list(zip(lat, lon))
-        geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-        geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
+            values = list(zip(datasets[0].iloc[:, i].to_list(), datasets[1].iloc[:, i].to_list()))
+
+            values_type = np.dtype([(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)])
+            group.create_dataset('values',data=values,dtype=values_type)
+
+        def create_positioning_path(self, h5_file, instance_group_path, lat, lon):
+            positioning_path = instance_group_path + '/Positioning'
+            positioning = h5_file.create_group(positioning_path)
+            lat_lon = list(zip(lat, lon))
+            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
+            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)

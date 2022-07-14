@@ -192,9 +192,3 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
             geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)], instance_position['lon'])
             geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
 
-        def create_positioning_path(self, h5_file, instance_group_path, lat, lon):
-            positioning_path = instance_group_path + '/Positioning'
-            positioning = h5_file.create_group(positioning_path)
-            lat_lon = list(zip(lat, lon))
-            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
