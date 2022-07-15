@@ -12,8 +12,8 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
-    def __init__(self, json_path, folder_path,template_path):
-        super().__init__(json_path, folder_path,template_path)
+    def __init__(self, json_path, folder_path, template_path, h5_file):
+        super().__init__(json_path, folder_path, template_path, h5_file)
         # overide file type from base class
         self.file_type = '104'
         self.product_id = 'WaterLevel'
@@ -134,25 +134,24 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
 
-    def _create_groups(self,h5_file,data):
+    def _create_groups(self, h5_file, data):
         """
         Create data groups for each station
         """
         no_of_instances = len(data['dataset_types'])
-        instance_group_counter = 1
 
         # Create all potential WaterLevel Instances
         for x in range(no_of_instances):
+
             ### Create Instance Group ###
             data_type = data['dataset_types'][x]
             instance_wl = data['wl'][data_type]
             instance_trend = data['trend'][data_type]
             instance_position = data['position'][data_type]
-            instance_group_path = '{product_id}/{product_id}.0{group_counter}'.format(product_id = self.product_id, group_counter = str(instance_group_counter))
-            instance_group_counter += 1
-            instance_group = h5_file.create_group(instance_group_path)
 
-            ### Create Instance Metadata ###
+            instance_group_path = '{product_id}/{product_id}.0{group_counter}'.format(product_id = self.product_id, group_counter = str(i+1))
+
+            instance_group = h5_file.create_group(instance_group_path)
 
             # 11 typeOfWaterLevelData
             dt_wl_type = h5py.enum_dtype({
@@ -165,6 +164,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
                 'Observed minus hindcast': 7,
                 'Observed minus forecast': 9,
                 'Forecast minus predicted': 10},basetype='i')
+
             if data_type == 'wlo':
                 wl_type = 1
             elif data_type =='wlp':
@@ -173,28 +173,12 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
                 wl_type = 5
 
             instance_group.attrs.create('typeOfWaterLevelData', wl_type, dtype=dt_wl_type)
-            num_groups = instance_wl.shape[1]
-            instance_group.attrs.create('numberOfStations', num_groups)
+            instance_group.attrs.create('numberOfStations', instance_wl.shape[1])
 
-            ### Create Group for each stations ###
+            ### Create atttributes
             self.create_attributes(h5_file, instance_group, instance_wl, instance_trend)
 
             ### Create Positioning Group ###
             self.create_positioning_path(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )
-
-            positioning_path = instance_group_path + '/Positioning'
-            positioning = h5_file.create_group(positioning_path)
-            lat = instance_position['lat']
-            lon = instance_position['lon']
-            lat_lon = list(zip(lat, lon))
-            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)], instance_position['lon'])
-            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
-
-        def create_positioning_path(self, h5_file, instance_group_path, lat, lon):
-            positioning_path = instance_group_path + '/Positioning'
-            positioning = h5_file.create_group(positioning_path)
-            lat_lon = list(zip(lat, lon))
-            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)

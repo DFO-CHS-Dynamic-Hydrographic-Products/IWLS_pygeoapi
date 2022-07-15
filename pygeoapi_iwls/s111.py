@@ -9,8 +9,8 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
-    def __init__(self, json_path, folder_path,template_path):
-        super().__init__(json_path, folder_path,template_path)
+    def __init__(self, json_path, folder_path,template_path, h5_file):
+        super().__init__(json_path, folder_path,template_path, h5_file)
         # overide file type from base class
         self.file_type = '111'
         self.product_id = 'SurfaceCurrent'
@@ -38,16 +38,16 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
 
         return  data_arrays
 
-    def _update_product_specific_general_metadata(self,h5_file):
+    def _update_product_specific_general_metadata(self, h5_file):
         """
-        Update product specific (S-111) general metadata.
+        Update product specific (S-111) general metadata
         """
         # Surface Current Depth, No change from template
         # ToDo: surfaceCurrentDepth is proposed for S111 1.1.1,
         # create here for now and move to template when 1.1.1 is finalized
         h5_file.attrs.create('surfaceCurrentDepth',1.0)
 
-    def _update_feature_metadata(self,h5_file,data):
+    def _update_feature_metadata(self, h5_file, data):
         """
         Update feature level metadata (SurfaceCurrent)
         """
@@ -67,10 +67,11 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         h5_file[self.product_id].attrs.create('numInstances',data['wcs'].shape[1])
 
 
-    def _create_groups(self,h5_file,data):
+    def _create_groups(self,h5_file, data):
         """
         Create data groups for each station
         """
+
         ### Update Instance Instance Group Metadata ###
         # N/A 1 to 4 bounding box same as feature
         # 5 Number times of records

@@ -18,7 +18,7 @@ class S100GeneratorDCF8():
     files. Used as parent by S104GeneratorDCF8 and S111GeneratorDCF8
     """
 
-    def __init__(self, json_path, folder_path,template_path):
+    def __init__(self, json_path, folder_path, template_path):
         """
         S100GeneratorDCF8 init method
         :param json_path: path to geojson to process
@@ -72,7 +72,7 @@ class S100GeneratorDCF8():
                 bbox = [cell_max_lat,cell_min_lat,cell_max_lon,cell_min_lon]
                 self._create_s100_dcf8(cell_data_list,filename,bbox)
 
-    def _create_s100_dcf8(self,s100_data,filename,bbox):
+    def _create_s100_dcf8(self, s100_data, filename, bbox):
         """
         Create single S-100  file from production template
         :param s100_data: Data to include in file
@@ -104,34 +104,40 @@ class S100GeneratorDCF8():
         """
         Update general metadata (file level)
         """
-        # eastBoundLongitude
-        east_lon= bbox[2]
-        h5_file.attrs.modify('eastBoundLongitude',east_lon)
+
         # epoch = no changes from template
-        # geographicIdentifier
-        geo_identifier = 'CND S' +  self.file_type + ' tile ' + filename[:-3]
-        h5_file.attrs.modify('geographicIdentifier',geo_identifier)
         # horizontalCRS = no changes from template
         # horizontalDatumReference = no changes from template
+        # product Specification = no changes from template
+
+        # geographicIdentifier
+        geo_identifier = 'CND S' +  self.file_type + ' tile ' + filename[:-3]
+        s100_util.create_modify_attribute(h5_file, 'geographicIdentifier', geo_identifier)
+
         # issueDate
         date_issue = datetime.datetime.now().utcnow().strftime("%Y%m%d").encode('UTF-8')
-        h5_file.attrs.modify('issueDate',date_issue)
+        s100_util.create_modify_attribute(h5_file, 'issueDate', date_issue)
+
         # issueTime
         time_issue = datetime.datetime.now().utcnow().strftime("%H%M%SZ").encode('UTF-8')
-        h5_file.attrs.modify('issueTime',time_issue)
+        s100_util.create_modify_attribute(h5_file, 'issueTime', time_issue)
+
         # metadata
         md_name = 'MD_' + filename[:-3] + '.XML'
-        h5_file.attrs.modify('metadata',md_name)
+        s100_util.create_modify_attribute(h5_file, 'metadata', md_name)
+
+        # eastBoundLongitude
+        s100_util.create_modify_attribute(h5_file, 'eastBoundLongitude', bbox[2])
+
         # northBoundLatitude
-        north_lat = bbox[0]
-        h5_file.attrs.modify('eastBoundLongitude',north_lat)
-        # product Specification = no changes from template
+        s100_util.create_modify_attribute(h5_file, 'northBoundLatitude', bbox[0])
+
         # southBoundLatitude
-        south_lat = bbox[1]
-        h5_file.attrs.modify('eastBoundLongitude',south_lat)
+        s100_util.create_modify_attribute(h5_file, 'southBoundLatitude', bbox[1])
+
         # westBoundLongitude
-        west_lon = bbox[3]
-        h5_file.attrs.modify('eastBoundLongitude',west_lon)
+        s100_util.create_modify_attribute(h5_file, 'westBoundLongitude', bbox[3])
+
         self._update_product_specific_general_metadata(h5_file)
 
     def _gen_data_table(self,s100_data,code):
@@ -181,6 +187,13 @@ class S100GeneratorDCF8():
         """
         raise NotImplementedError('Must override _update_feature_metadata')
 
+    def _create_groups(self,h5_file,data):
+        """
+        Update feature level metadata
+        Must be implemented by child class
+        """
+        raise NotImplementedError('Must override _create_groups')
+
     def _create_attributes(self, h5_file, group, datasets):
         """
         Create data attributes for each station
@@ -190,23 +203,32 @@ class S100GeneratorDCF8():
             "Must invoke S104 or S111 class to get the dataset names"
 
         ### Create Instance Metadata ###
-        num_times = len(datasets[0])
-        time_record_interval = int((datasets[0].index[1] - datasets[0].index[0]).total_seconds())
-        start_datetime = datasets[0].index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
-        end_datetime = datasets[0].index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
-        num_groups = datasets[0].shape[1]
 
-        s100_util.create_modify_attribute(group, 'numberOfTimes', num_times)
+        # numberOfTimes
+        s100_util.create_modify_attribute(group, 'numberOfTimes', len(datasets[0]))
+        time_record_interval = int((datasets[0].index[1] - datasets[0].index[0]).total_seconds())
+
+        # timeRecordInterval
         s100_util.create_modify_attribute(group, 'timeRecordInterval', time_record_interval)
+
+        # dateTimeofFirstRecord
+        start_datetime = datasets[0].index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
         s100_util.create_modify_attribute(group, 'dateTimeOfFirstRecord', start_datetime)
+
+        # dateTimeOfLastRecord
+        end_datetime = datasets[0].index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
         s100_util.create_modify_attribute(group, 'dateTimeOfLastRecord', end_datetime)
-        s100_util.create_modify_attribute(group, 'numGRP', num_groups)
+
+        # numGroups
+        num_groups = datasets[0].shape[1]
+        s100_util.create_modify_attribute(group, 'numGRP', datasets[0].shape[1])
 
         for i in range(1, num_groups):
             # Create Group
             group_path = '{product_id}/{product_id}.01/Group_{group_no}'.format(
-                product_id=self.product_id, group_no= str(group_counter).zfill(3)
+                product_id=self.product_id, group_no= str(i).zfill(3)
             )
+
             group = h5_file.create_group(group_path)
 
             ### Create Group Metadata ##
@@ -225,8 +247,8 @@ class S100GeneratorDCF8():
             group.create_dataset('values',data=values,dtype=values_type)
 
         def create_positioning_path(self, h5_file, instance_group_path, lat, lon):
+
             positioning_path = instance_group_path + '/Positioning'
             positioning = h5_file.create_group(positioning_path)
-            lat_lon = list(zip(lat, lon))
             geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
+            positioning.create_dataset('geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type)
