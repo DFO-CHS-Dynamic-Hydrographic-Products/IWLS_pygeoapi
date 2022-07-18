@@ -1,33 +1,31 @@
-# Standard library imports
-import json
 # Packages imports
-import provider_iwls.s100
-import h5py
 import numpy as np
 import pandas as pd
 from scipy.stats import linregress
 
-class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
+# Import local files
+from s100 import S100GeneratorDCF8
+
+class S104GeneratorDCF8(S100GeneratorDCF8):
     """
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
-    def __init__(self, json_path, folder_path, template_path, h5_file):
-        super().__init__(json_path, folder_path, template_path, h5_file)
+    def __init__(self, json_path, folder_path, template_path):
+        super().__init__(json_path, folder_path, template_path)
         # overide file type from base class
         self.file_type = '104'
         self.product_id = 'WaterLevel'
         self.dataset_names = ('waterLevelHeight', 'waterLevelTrend')
 
 
-    def _get_flags(self,x):
+    def _get_flags(self, x, trend_treshold = 0.2):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
         param x: slope value calculated with a 1 hour rolling window
         return: trend flag (int)
         """
-        trend_treshold = 0.2
         if np.isnan(x):
             return 3
         elif x > trend_treshold:
@@ -90,6 +88,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         df_wlo_position = self._gen_positions(df_wlo)
         df_wlf_position = self._gen_positions(df_wlf)
         df_spine_position = self._gen_positions(df_spine)
+
         position = {'wlp':df_wlp_position,'wlo':df_wlo_position,'wlf':df_wlf_position,'spine':df_spine_position}
 
          # List available data sets
@@ -119,20 +118,23 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         """
         Update feature level metadata (WaterLevel)
         """
+        # methodWaterLevelProduct = no changes from template
         # commonPointRule = no changes from template
         # dataCodingFormat = no changes from template
         # dimension = no changes from template
         # horizontalPositionUncertainty = no changes from template (for now, -1.0 unassessed)
         # maxDatasetHeight
-        h5_file['WaterLevel'].attrs.modify('maxDatasetHeight',data['max'])
-        # methodWaterLevelProduct = no changes from template
-        # minDatasetHeight
-        h5_file['WaterLevel'].attrs.modify('minDatasetHeight',data['min'])
-        # numInstance
-        h5_file['WaterLevel'].attrs.modify('numInstances',len(data['dataset_types']))
         # pickPriorityType = no changes from template
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
+
+        h5_file[self.product_id].attrs.modify('maxDatasetHeight',data['max'])
+
+        # minDatasetHeight
+        h5_file[self.product_id].attrs.modify('minDatasetHeight',data['min'])
+
+        # numInstance
+        h5_file[self.product_id].attrs.modify('numInstances',len(data['dataset_types']))
 
     def _create_groups(self, h5_file, data):
         """

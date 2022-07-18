@@ -1,16 +1,13 @@
-# Standard library imports
-import json
-# Packages imports
-import provider_iwls.s100
-import numpy as np
+# Import local files
+from s100 import S100GeneratorDCF8
 
-class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
+class S111GeneratorDCF8(S100GeneratorDCF8):
     """
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
-    def __init__(self, json_path, folder_path,template_path, h5_file):
-        super().__init__(json_path, folder_path,template_path, h5_file)
+    def __init__(self, json_path, folder_path,template_path):
+        super().__init__(json_path, folder_path,template_path)
         # overide file type from base class
         self.file_type = '111'
         self.product_id = 'SurfaceCurrent'
