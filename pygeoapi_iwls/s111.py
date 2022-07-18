@@ -43,6 +43,7 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _update_product_specific_general_metadata(self,h5_file):
         """
         Update product specific (S-111) general metadata.
+        :param h5_file: h5 file to update
         """
         # Surface Current Depth, No change from template
         # ToDo: surfaceCurrentDepth is proposed for S111 1.1.1,
@@ -52,6 +53,9 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _update_feature_metadata(self,h5_file,data):
         """
         Update feature level metadata (SurfaceCurrent)
+
+        :param h5_file: h5 file to update
+        :param data: formatted data arrays generated from _format_data_arrays
         """
         # commonPointRule, No change from template
         # dataCodingFormat, No change from template
@@ -72,6 +76,9 @@ class S111GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _create_groups(self,h5_file,data):
         """
         Create data groups for each station
+
+        :param h5_file: h5 file to update
+        :param data: formatted data arrays generated from _format_data_arrays
         """
         ### Update Instance Instance Group Metadata ###
         # N/A 1 to 4 bounding box same as feature

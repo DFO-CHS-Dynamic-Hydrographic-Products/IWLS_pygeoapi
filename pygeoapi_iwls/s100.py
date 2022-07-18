@@ -99,6 +99,9 @@ class S100GeneratorDCF8():
     def _update_general_metadata(self,h5_file,filename,bbox):
         """
         Update general metadata (file level)
+        :param h5_file: h5 file to update
+        :param filename: h5 file name (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy]
         """
         # eastBoundLongitude
         east_lon= bbox[2]
@@ -120,14 +123,14 @@ class S100GeneratorDCF8():
         h5_file.attrs.modify('metadata',md_name)
         # northBoundLatitude
         north_lat = bbox[0]
-        h5_file.attrs.modify('eastBoundLongitude',north_lat)
+        h5_file.attrs.modify('northBoundLongitude',north_lat)
         # product Specification = no changes from template
         # southBoundLatitude
         south_lat = bbox[1]
-        h5_file.attrs.modify('eastBoundLongitude',south_lat)
+        h5_file.attrs.modify('southBoundLongitude',south_lat)
         # westBoundLongitude
         west_lon = bbox[3]
-        h5_file.attrs.modify('eastBoundLongitude',west_lon)
+        h5_file.attrs.modify('westBoundLongitude',west_lon)
         self._update_product_specific_general_metadata(h5_file)
 
     def _gen_data_table(self,s100_data,code):

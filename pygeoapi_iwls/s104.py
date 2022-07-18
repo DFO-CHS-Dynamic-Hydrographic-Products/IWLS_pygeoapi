@@ -116,6 +116,9 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _update_feature_metadata(self,h5_file,data):
         """
         Update feature level metadata (WaterLevel)
+
+        :param h5_file: h5 file to update
+        :param data: formatted data arrays generated from _format_data_arrays
         """
         # commonPointRule = no changes from template
         # dataCodingFormat = no changes from template
@@ -135,6 +138,8 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _create_groups(self,h5_file,data):
         """
         Create data groups for each station
+        :param h5_file: h5 file to update
+        :param data: formatted data arrays generated from _format_data_arrays
         """
         no_of_instances = len(data['dataset_types'])
         instance_group_counter = 1
