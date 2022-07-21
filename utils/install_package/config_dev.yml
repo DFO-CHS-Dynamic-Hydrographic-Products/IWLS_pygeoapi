@@ -56,7 +56,7 @@ metadata:
         role: pointOfContact
 
 resources:
-    iwls:
+    iwls_waterlevel:
         type: collection  # REQUIRED (collection, process, or stac-collection)
         title: Waterlevel  # title of dataset
         description: Observation, Forecast and Prediction  # abstract of dataset
@@ -88,14 +88,54 @@ resources:
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
               default: true  # optional: if not specified, the first provider definition is considered the default
-              name: provider_iwls.provider_iwls.ProviderIwls
+              name: provider_iwls.provider_iwls.ProviderIwlsWaterLevels
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
               format:  # optional default format
                   name: GeoJSON  # required: format name
                   mimetype: application/json  # required: format mimetype
-    s104:
+
+    iwls_surfacecurrent:
+        type: collection  # REQUIRED (collection, process, or stac-collection)
+        title: SurfaceCurrent  # title of dataset
+        description: Observations  # abstract of dataset
+        keywords:  # list of related keywords
+            - observations
+            - Surface Currents
+        context:  # linked data configuration (see Linked Data section)
+            - datetime: https://schema.org/DateTime
+            - vocab: https://example.com/vocab#
+              stn_id: "vocab:stn_id"
+              value: "vocab:value"
+        links:  # list of 1..n related links
+            - type: text/csv  # MIME type
+              rel: canonical  # link relations per https://www.iana.org/assignments/link-relations/link-relations.xhtml
+              title: data  # title
+              href: https://api-iwls.dfo-mpo.gc.ca/  # URL
+              hreflang: en-US  # language
+        extents:  # spatial and temporal extents
+            spatial:  # required
+                bbox: [-180,-90,180,90]  # list of minx, miny, maxx, maxy
+                crs: http://www.opengis.net/def/crs/OGC/1.3/CRS84  # CRS
+            temporal:  # optional
+                begin: 1900-01-01T00:00:00Z  # start datetime in RFC3339
+                end: 2100-01-01T00:00:00Z  # end datetime in RFC3339
+        providers:  # list of 1..n required connections information
+            # provider name
+            # see pygeoapi.plugin for supported providers
+            # for custom built plugins, use the import path (e.g. mypackage.provider.MyProvider)
+            # see Plugins section for more information
+            - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
+              default: true  # optional: if not specified, the first provider definition is considered the default
+              name: provider_iwls.provider_iwls.ProviderIwlsCurrents
+              data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
+              id_field: id  # required for vector data, the field corresponding to the ID
+              title_field: id # optional field of which property to display as title/label on HTML pages
+              format:  # optional default format
+                  name: GeoJSON  # required: format name
+                  mimetype: application/json  # required: format mimetype    
+    s100:
         type: process
         processor:
-            name: provider_iwls.s104.S104Processor
+            name: provider_iwls.process_iwls.S100Processor
