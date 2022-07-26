@@ -1,6 +1,7 @@
 # Packages imports
 import numpy as np
 import pandas as pd
+import h5py
 from scipy.stats import linregress
 
 # Import local files
@@ -143,10 +144,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         no_of_instances = len(data['dataset_types'])
 
         # Create all potential WaterLevel Instances
-        for x in range(no_of_instances):
+        for i in range(no_of_instances):
 
             ### Create Instance Group ###
-            data_type = data['dataset_types'][x]
+            data_type = data['dataset_types'][i]
             instance_wl = data['wl'][data_type]
             instance_trend = data['trend'][data_type]
             instance_position = data['position'][data_type]
@@ -155,7 +156,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
             instance_group = h5_file.create_group(instance_group_path)
 
-            # 11 typeOfWaterLevelData
+            # typeOfWaterLevelData
             dt_wl_type = h5py.enum_dtype({
                 'Observation': 1,
                 'Astronomical prediction': 2,
@@ -178,9 +179,9 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             instance_group.attrs.create('numberOfStations', instance_wl.shape[1])
 
             ### Create atttributes
-            self.create_attributes(h5_file, instance_group, instance_wl, instance_trend)
+            self._create_attributes(h5_file, instance_group, instance_wl, instance_trend)
 
             ### Create Positioning Group ###
-            self.create_positioning_path(
+            self._create_positioning_path(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )

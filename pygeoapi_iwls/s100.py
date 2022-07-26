@@ -5,6 +5,7 @@ import shutil
 import datetime
 
 # Packages imports
+from pathlib import Path
 import pandas as pd
 import numpy as np
 import h5py
@@ -18,17 +19,23 @@ class S100GeneratorDCF8():
     files. Used as parent by S104GeneratorDCF8 and S111GeneratorDCF8
     """
 
-    def __init__(self, json_path, folder_path, template_path):
+    def __init__(self,
+                 json_path: str,
+                 folder_path: str,
+                 template_path: str
+    ):
         """
+
         S100GeneratorDCF8 init method
         :param json_path: path to geojson to process
         :param folder_path: path to processing folder
         :param template_path: path to S-100 h5 file production template
         """
-        self.folder_path = folder_path
-        self.json_path = json_path
-        self.template_path = template_path
+        self.folder_path = Path(folder_path)
+        self.json_path = Path(json_path)
+        self.template_path = Path(template_path)
         self.dataset_names = None
+        self.product_id = None
         # Overide with correct layer in child class
         self.file_type = '100'
         # Raise error if incorect layer type is passed
@@ -36,14 +43,20 @@ class S100GeneratorDCF8():
             raise ValueError('Invalid file_type,must be 104 or 111')
 
 
-    def create_s100_tiles_from_template(self,grid_path):
+    def create_s100_tiles_from_template(self,
+                                        grid_path: str
+    ):
         """
         Create S-100 tiles from production template
         :param grid_path: path to geojson tile grid
         """
+
+        assert self.json_path.exists(), "Json path does not exist: {json_path}".format(json_path=self.json_path)
+
         # Load Json and convert to python dict
         with open(self.json_path) as data_file:
             data = json.loads(data_file.read())
+
         # convert to list of stations dicts
         data = data['features']
 
@@ -52,6 +65,8 @@ class S100GeneratorDCF8():
             grid_list = json.load(grid_file)['features']
 
         # Loop over every cells and generate S-100 if data exists in request
+        print(grid_list.shape)
+        print(type(grid_list))
         for i in grid_list:
             polygon = i['geometry']['coordinates'][0]
             cell_max_lat = max([x[1] for x in polygon])
@@ -72,10 +87,14 @@ class S100GeneratorDCF8():
                 bbox = [cell_max_lat,cell_min_lat,cell_max_lon,cell_min_lon]
                 self._create_s100_dcf8(cell_data_list,filename,bbox)
 
-    def _create_s100_dcf8(self, s100_data, filename, bbox):
+    def _create_s100_dcf8(self,
+                          s100_data,
+                          filename: str,
+                          bbox: list
+    ):
         """
         Create single S-100  file from production template
-        :param s100_data: Data to include in file
+        :param s100_data Data to include in file
         :param filename: name of S-100 file
         :param bbox: file limit
         """
@@ -100,7 +119,11 @@ class S100GeneratorDCF8():
         """
         raise NotImplementedError('Must override _format_data_arrays')
 
-    def _update_general_metadata(self,h5_file,filename,bbox):
+    def _update_general_metadata(self,
+                                 h5_file: h5py._hl.files.File,
+                                 filename: str,
+                                 bbox: list
+    ):
         """
         Update general metadata (file level)
         """
@@ -140,13 +163,19 @@ class S100GeneratorDCF8():
 
         self._update_product_specific_general_metadata(h5_file)
 
-    def _gen_data_table(self,s100_data,code):
+    def _gen_data_table(self,
+                        s100_data,
+                        code
+    ):
         """
         Generate dataframe of water level information needed to produce S-100 files
         :param s100_data: iwls json timeseries
         :param code: data type code
         :return df: dataframe of water level information needed to produce S-100 files
         """
+        print("code")
+        print(type(code))
+        print(type(s100_data))
         data_list = []
         for i in  s100_data:
             if i['properties'][code]:
@@ -160,9 +189,9 @@ class S100GeneratorDCF8():
         else:
             return pd.DataFrame()
 
-        return df
-
-    def _gen_positions(self,df):
+    def _gen_positions(self,
+                       df: pd.core.frame.DataFrame
+    ):
         """
         Generate position for stations
         :param df: pandas data frame of water level or current information information
@@ -173,32 +202,44 @@ class S100GeneratorDCF8():
         position = {'lat':lat, 'lon':lon}
         return position
 
-    def _update_product_specific_general_metadata(self,h5_file):
+    def _update_product_specific_general_metadata(self,
+                                                  h5_file: h5py._hl.files.File
+    ):
         """
         Update product specific general metadata.
         Must be implemented by child class
         """
         raise NotImplementedError('Must override _update_product_specific_general_metadata')
 
-    def _update_feature_metadata(self,h5_file,data):
+    def _update_feature_metadata(self,
+                                 h5_file: h5py._hl.files.File,
+                                 data):
         """
         Update feature level metadata
         Must be implemented by child class
         """
         raise NotImplementedError('Must override _update_feature_metadata')
 
-    def _create_groups(self,h5_file,data):
+    def _create_groups(self,
+                       h5_file: h5py._hl.files.File,
+                       data
+    ):
         """
         Update feature level metadata
         Must be implemented by child class
         """
         raise NotImplementedError('Must override _create_groups')
 
-    def _create_attributes(self, h5_file, group, datasets):
+    def _create_attributes(self,
+                           h5_file: h5py._hl.files.File,
+                           group: str,
+                           datasets
+    ):
         """
         Create data attributes for each station
 
         """
+        print(type(datasets))
         assert self.dataset_names is not None, \
             "Must invoke S104 or S111 class to get the dataset names"
 
@@ -232,23 +273,47 @@ class S100GeneratorDCF8():
             group = h5_file.create_group(group_path)
 
             ### Create Group Metadata ##
+
+            # endDateTime
             group.attrs.create('endDateTime', end_datetime)
+
+            # numberOfTimes
             group.attrs.create('numberOfTimes', datasets[0].shape[0])
+
+            # startDateTime
             group.attrs.create('startDateTime', start_datetime)
+
+            # stationIdentification
             stn_id = datasets[0].columns[i].split("$")[0]
             group.attrs.create('stationIdentification', stn_id)
+
+            # stationName
             stn_name = datasets[0].columns[i].split("$")[1]
             group.attrs.create('stationName', stn_name)
+
+            # timeIntervalIndex
             group.attrs.create('timeIntervalIndex', 1)
+
+            # timeRecordInterval
             group.attrs.create('timeRecordInterval', time_record_interval)
+
             values = list(zip(datasets[0].iloc[:, i].to_list(), datasets[1].iloc[:, i].to_list()))
 
             values_type = np.dtype([(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)])
             group.create_dataset('values',data=values,dtype=values_type)
 
-        def create_positioning_path(self, h5_file, instance_group_path, lat, lon):
+        def _create_positioning_path(self,
+                                     h5_file: h5py._hl.files.File,
+                                     instance_group_path: str,
+                                     lat: float,
+                                     lon: float
+        ):
 
             positioning_path = instance_group_path + '/Positioning'
+
             positioning = h5_file.create_group(positioning_path)
+
             geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            positioning.create_dataset('geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type)
+            positioning.create_dataset(
+                'geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type
+            )

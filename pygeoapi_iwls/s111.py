@@ -82,6 +82,6 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         self._create_attributes(h5_file, instance_sc, data['wcs'], data['wcd'])
 
         ### Create Positioning Group ###
-        self.create_positioning_path(
+        self._create_positioning_path(
             h5_file, instance_group_path, data['position']['lat'], data['position']['lon']
         )
