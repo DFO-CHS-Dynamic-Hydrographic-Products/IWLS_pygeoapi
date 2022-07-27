@@ -20,7 +20,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         self.dataset_names = ('waterLevelHeight', 'waterLevelTrend')
 
 
-    def _get_flags(self, x, trend_treshold = 0.2):
+    def _get_flags(self,
+                   x,
+                   trend_treshold = 0.2
+    ):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
@@ -108,14 +111,19 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         return  data_arrays
 
 
-    def _update_product_specific_general_metadata(self,h5_file):
+    def _update_product_specific_general_metadata(self,
+                                                  h5_file: h5py._hl.files.File
+    ):
         """
         Update product specific (S-104) general metadata.
         """
         # No Changes from Template
         pass
 
-    def _update_feature_metadata(self,h5_file,data):
+    def _update_feature_metadata(self,
+                                 h5_file: h5py._hl.files.File,
+                                 data
+    ):
         """
         Update feature level metadata (WaterLevel)
         """
@@ -137,7 +145,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # numInstance
         h5_file[self.product_id].attrs.modify('numInstances',len(data['dataset_types']))
 
-    def _create_groups(self, h5_file, data):
+    def _create_groups(self,
+                       h5_file: h5py._hl.files.File,
+                       data
+    ):
         """
         Create data groups for each station
         """
@@ -182,6 +193,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_attributes(h5_file, instance_group, instance_wl, instance_trend)
 
             ### Create Positioning Group ###
-            self._create_positioning_path(
+            self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )

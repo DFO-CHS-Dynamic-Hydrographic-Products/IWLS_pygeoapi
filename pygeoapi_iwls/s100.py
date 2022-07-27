@@ -232,37 +232,40 @@ class S100GeneratorDCF8():
 
     def _create_attributes(self,
                            h5_file: h5py._hl.files.File,
-                           group: str,
-                           datasets
+                           group: h5py._hl.group.Group,
+                           dataset1,
+                           dataset2
     ):
         """
         Create data attributes for each station
+        :param h5py._hl.group.Group group: Root group to assign values
+        :param dataset1:
+        :param dataset2:
 
         """
-        print(type(datasets))
         assert self.dataset_names is not None, \
             "Must invoke S104 or S111 class to get the dataset names"
 
         ### Create Instance Metadata ###
 
         # numberOfTimes
-        s100_util.create_modify_attribute(group, 'numberOfTimes', len(datasets[0]))
-        time_record_interval = int((datasets[0].index[1] - datasets[0].index[0]).total_seconds())
+        s100_util.create_modify_attribute(group, 'numberOfTimes', len(dataset1))
+        time_record_interval = int((dataset1.index[1] - dataset1.index[0]).total_seconds())
 
         # timeRecordInterval
         s100_util.create_modify_attribute(group, 'timeRecordInterval', time_record_interval)
 
         # dateTimeofFirstRecord
-        start_datetime = datasets[0].index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        start_datetime = dataset1[0].index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
         s100_util.create_modify_attribute(group, 'dateTimeOfFirstRecord', start_datetime)
 
         # dateTimeOfLastRecord
-        end_datetime = datasets[0].index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+        end_datetime = dataset1.index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
         s100_util.create_modify_attribute(group, 'dateTimeOfLastRecord', end_datetime)
 
         # numGroups
-        num_groups = datasets[0].shape[1]
-        s100_util.create_modify_attribute(group, 'numGRP', datasets[0].shape[1])
+        num_groups = dataset1.shape[1]
+        s100_util.create_modify_attribute(group, 'numGRP', num_groups)
 
         for i in range(1, num_groups):
             # Create Group
@@ -278,17 +281,17 @@ class S100GeneratorDCF8():
             group.attrs.create('endDateTime', end_datetime)
 
             # numberOfTimes
-            group.attrs.create('numberOfTimes', datasets[0].shape[0])
+            group.attrs.create('numberOfTimes', num_groups)
 
             # startDateTime
             group.attrs.create('startDateTime', start_datetime)
 
             # stationIdentification
-            stn_id = datasets[0].columns[i].split("$")[0]
+            stn_id = dataset1.columns[i].split("$")[0]
             group.attrs.create('stationIdentification', stn_id)
 
             # stationName
-            stn_name = datasets[0].columns[i].split("$")[1]
+            stn_name = dataset1.columns[i].split("$")[1]
             group.attrs.create('stationName', stn_name)
 
             # timeIntervalIndex
@@ -297,23 +300,36 @@ class S100GeneratorDCF8():
             # timeRecordInterval
             group.attrs.create('timeRecordInterval', time_record_interval)
 
-            values = list(zip(datasets[0].iloc[:, i].to_list(), datasets[1].iloc[:, i].to_list()))
+            values = list(zip(dataset1.iloc[:, i].to_list(), dataset2.iloc[:, i].to_list()))
 
             values_type = np.dtype([(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)])
             group.create_dataset('values',data=values,dtype=values_type)
 
-        def _create_positioning_path(self,
-                                     h5_file: h5py._hl.files.File,
-                                     instance_group_path: str,
-                                     lat: float,
-                                     lon: float
-        ):
+    def _create_positioning_group(self,
+                                 h5_file: h5py._hl.files.File,
+                                 instance_group_path: str,
+                                 lat: float,
+                                 lon: float
+    ):
+        '''
+        Creates the positioning group and associated geometry values dataset of lat/lon values
 
-            positioning_path = instance_group_path + '/Positioning'
+        :param h5py._hl.files.File h5_file: The output h5 file
+        :param str instance_group_path: Path to root group for positioning path
+        :param float lat: Lon dataset values
+        :param float lon: Lat dataset values
+        '''
 
-            positioning = h5_file.create_group(positioning_path)
+        # Create path to positioning group
+        positioning_path = instance_group_path + '/Positioning'
 
-            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            positioning.create_dataset(
-                'geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type
-            )
+        # Create positioning group
+        positioning = h5_file.create_group(positioning_path)
+
+        # Create the type for geometry values dataset
+        geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
+
+        # Create geometry values dataset with lat/lon values
+        positioning.create_dataset(
+            'geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type
+        )

@@ -64,7 +64,10 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         h5_file[self.product_id].attrs.create('numInstances',data['wcs'].shape[1])
 
 
-    def _create_groups(self,h5_file, data):
+    def _create_groups(self,
+                       h5_file: h5py._hl.files.File,
+                       data
+    ):
         """
         Create data groups for each station
         """
@@ -82,6 +85,6 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         self._create_attributes(h5_file, instance_sc, data['wcs'], data['wcd'])
 
         ### Create Positioning Group ###
-        self._create_positioning_path(
+        self._create_positioning_group(
             h5_file, instance_group_path, data['position']['lat'], data['position']['lon']
         )
