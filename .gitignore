@@ -4,3 +4,7 @@ s111_test.json
 test.json
 s104.zip
 http_cache
+install
+*.h5
+s100_process
+.DS_Store
