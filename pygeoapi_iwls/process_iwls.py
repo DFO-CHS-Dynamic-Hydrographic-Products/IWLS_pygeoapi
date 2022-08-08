@@ -102,6 +102,7 @@ class S100Processor(BaseProcessor):
         """
         Initialize object
         :param processor_def: provider definition
+        :PROCESS_METADATA: process description, json
         :returns: pygeoapi.process.S100Processor
         """
 
@@ -111,8 +112,7 @@ class S100Processor(BaseProcessor):
         """
         Execution Method
         :param data: User Input, format defined in PROCESS_METADATA
-        :PROCESS_METADATA: process description
-        :returns: MimeType: 'application/zip', zip archive of S-100 files
+        :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
 
         print("Processsing request")
@@ -163,7 +163,7 @@ class S100Processor(BaseProcessor):
         print("Sending Request to IWLS")
         t_start = timer()
         # Send Request to IWLS API and return geojson    
-         # Establish connection to IWLS API
+        # Establish connection to IWLS API
         api = IwlsApiConnector()
         # Pass query to IWLS API
         if layer == 'S104':
