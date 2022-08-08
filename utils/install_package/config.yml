@@ -1,3 +1,6 @@
+From cache: True
+Created: 2022-08-08 18:19:53.385321
+Expires: 2022-08-09 18:19:53.385295
 components:
   parameters:
     f:
@@ -122,9 +125,9 @@ components:
       type: object
 info:
   contact:
-    email: maxime.carre@dfo-mpo.gc.ca
-    name: Canadian Hydrographic Service
-    url: https://www.charts.gc.ca/
+    email: XXX XXX
+    name: XXX XXX
+    url: XXX XXX
   description: pygeoapi provides an API to geospatial data
   license:
     name: CC-BY 4.0 license
@@ -172,10 +175,10 @@ paths:
       summary: Collections
       tags:
       - server
-  /collections/iwls:
+  /collections/iwls_surfacecurrent:
     get:
-      description: Observation, Forecast and Prediction
-      operationId: describeIwlsCollection
+      description: Observations
+      operationId: describeIwls_surfacecurrentCollection
       parameters:
       - $ref: '#/components/parameters/f'
       - $ref: '#/components/parameters/lang'
@@ -188,15 +191,16 @@ paths:
           $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
         '500':
           $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
-      summary: Get Waterlevel metadata
+      summary: Get SurfaceCurrent metadata
       tags:
-      - iwls
-  /collections/iwls/items:
+      - iwls_surfacecurrent
+  /collections/iwls_surfacecurrent/items:
     get:
-      description: Observation, Forecast and Prediction
-      operationId: getIwlsFeatures
+      description: Observations
+      operationId: getIwls_surfacecurrentFeatures
       parameters:
-      - description: The optional f parameter indicates the output format which the
+      - &id001
+        description: The optional f parameter indicates the output format which the
           server shall provide as part of the response document.  The default format
           is GeoJSON.
         explode: false
@@ -212,7 +216,8 @@ paths:
           - csv
           type: string
         style: form
-      - description: The optional lang parameter instructs the server return a response
+      - &id002
+        description: The optional lang parameter instructs the server return a response
           in a certain language, if supported.  If the language is not among the available
           values, the Accept-Language header language will be used if it is supported.
           If the header is missing, the default server language is used. Note that
@@ -254,13 +259,88 @@ paths:
           $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
         '500':
           $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
-      summary: Get Waterlevel items
+      summary: Get SurfaceCurrent items
       tags:
-      - iwls
-  /collections/iwls/items/{featureId}:
+      - iwls_surfacecurrent
+  /collections/iwls_surfacecurrent/items/{featureId}:
+    get:
+      description: Observations
+      operationId: getIwls_surfacecurrentFeature
+      parameters:
+      - $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/featureId
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Feature
+        '400':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get SurfaceCurrent item by id
+      tags:
+      - iwls_surfacecurrent
+  /collections/iwls_waterlevel:
     get:
       description: Observation, Forecast and Prediction
-      operationId: getIwlsFeature
+      operationId: describeIwls_waterlevelCollection
+      parameters:
+      - $ref: '#/components/parameters/f'
+      - $ref: '#/components/parameters/lang'
+      responses:
+        '200':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Collection
+        '400':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Waterlevel metadata
+      tags:
+      - iwls_waterlevel
+  /collections/iwls_waterlevel/items:
+    get:
+      description: Observation, Forecast and Prediction
+      operationId: getIwls_waterlevelFeatures
+      parameters:
+      - *id001
+      - *id002
+      - $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/bbox
+      - $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/limit
+      - description: The properties that should be included for each feature. The
+          parameter value is a comma-separated list of property names.
+        explode: false
+        in: query
+        name: properties
+        required: false
+        schema:
+          items:
+            enum: []
+            type: string
+          type: array
+        style: form
+      - $ref: '#/components/parameters/skipGeometry'
+      - $ref: https://raw.githubusercontent.com/opengeospatial/ogcapi-records/master/core/openapi/parameters/sortby.yaml
+      - $ref: '#/components/parameters/startindex'
+      responses:
+        '200':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/Features
+        '400':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/InvalidParameter
+        '404':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/NotFound
+        '500':
+          $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
+      summary: Get Waterlevel items
+      tags:
+      - iwls_waterlevel
+  /collections/iwls_waterlevel/items/{featureId}:
+    get:
+      description: Observation, Forecast and Prediction
+      operationId: getIwls_waterlevelFeature
       parameters:
       - $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/parameters/featureId
       - $ref: '#/components/parameters/f'
@@ -276,7 +356,7 @@ paths:
           $ref: http://schemas.opengis.net/ogcapi/features/part1/1.0/openapi/ogcapi-features-1.yaml#/components/responses/ServerError
       summary: Get Waterlevel item by id
       tags:
-      - iwls
+      - iwls_waterlevel
   /conformance:
     get:
       description: API conformance definition
@@ -337,12 +417,10 @@ paths:
       summary: Processes
       tags:
       - server
-  /processes/hello-world:
+  /processes/s100:
     get:
-      description: An example process that takes a name as input, and echoes it back
-        as output. Intended to demonstrate a simple process with a single literal
-        input.
-      operationId: describeHello-worldProcess
+      description: Generate archive of S100 files from IWLS Geojson response
+      operationId: describeS100Process
       parameters:
       - $ref: '#/components/parameters/f'
       responses:
@@ -352,56 +430,11 @@ paths:
           $ref: '#/components/responses/default'
       summary: Get process metadata
       tags:
-      - hello-world
-  /processes/hello-world/execution:
+      - s100
+  /processes/s100/execution:
     post:
-      description: An example process that takes a name as input, and echoes it back
-        as output. Intended to demonstrate a simple process with a single literal
-        input.
-      operationId: executeHello-worldJob
-      requestBody:
-        content:
-          application/json:
-            example:
-              inputs:
-                message: An optional message.
-                name: World
-            schema:
-              $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
-        description: Mandatory execute request JSON
-        required: true
-      responses:
-        '200':
-          $ref: '#/components/responses/200'
-        '201':
-          $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ExecuteAsync.yaml
-        '404':
-          $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/NotFound.yaml
-        '500':
-          $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ServerError.yaml
-        default:
-          $ref: '#/components/responses/default'
-      summary: Process Hello World execution
-      tags:
-      - hello-world
-  /processes/s104:
-    get:
-      description: Generate archive of S104 files from IWLS Geojson response
-      operationId: describeS104Process
-      parameters:
-      - $ref: '#/components/parameters/f'
-      responses:
-        '200':
-          $ref: '#/components/responses/200'
-        default:
-          $ref: '#/components/responses/default'
-      summary: Get process metadata
-      tags:
-      - s104
-  /processes/s104/execution:
-    post:
-      description: Generate archive of S104 files from IWLS Geojson response
-      operationId: executeS104Job
+      description: Generate archive of S100 files from IWLS Geojson response
+      operationId: executeS100Job
       requestBody:
         content:
           application/json:
@@ -409,6 +442,7 @@ paths:
               inputs:
                 bbox: -123.28,49.07,-123.01,49.35
                 end_time: '2021-12-06T23:00:00Z'
+                layer: s104
                 start_time: '2021-12-06T00:00:00Z'
             schema:
               $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml
@@ -425,9 +459,9 @@ paths:
           $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/responses/ServerError.yaml
         default:
           $ref: '#/components/responses/default'
-      summary: Process S104 execution
+      summary: Process S100 execution
       tags:
-      - s104
+      - s100
 servers:
 - description: pygeoapi provides an API to geospatial data
   url: http://localhost:5000/
@@ -440,10 +474,9 @@ tags:
 - description: SpatioTemporal Asset Catalog
   name: stac
 - description: Observation, Forecast and Prediction
-  name: iwls
-- description: Generate archive of S104 files from IWLS Geojson response
-  name: s104
-- description: An example process that takes a name as input, and echoes it back as
-    output. Intended to demonstrate a simple process with a single literal input.
-  name: hello-world
+  name: iwls_waterlevel
+- description: Observations
+  name: iwls_surfacecurrent
+- description: Generate archive of S100 files from IWLS Geojson response
+  name: s100
 

@@ -1,0 +1,14 @@
+Metadata-Version: 2.1
+Name: provider-iwls
+Version: 0.0.1
+Summary: package
+Home-page: https://github.com/mcarre2/pygeoapi_iwls
+Author: Maxime Carre
+Author-email: Maxime Carre
+License: UNKNOWN
+Description: PygeoAPI - IWLS
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
