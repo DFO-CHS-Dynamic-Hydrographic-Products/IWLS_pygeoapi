@@ -21,7 +21,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
-        param x: slope value calculated with a 1 hour rolling window
+        param x: slope value calculated with a 1 hour rolling window (float)
         return: trend flag (int)
         """
         trend_treshold = 0.2
@@ -37,8 +37,8 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _gen_S104_trends(self,df_wl):
         """
         Generate water level trend flags from water level values
-        :param df_wl: pandas dataframe containing water level values
-        :return: pandas Dataframe containing trend Flags for respective water level values
+        :param df_wl: pandas dataframe containing water level values (pandas dataframe)
+        :return: pandas Dataframe containing trend Flags for respective water level values (pandas dataframe)
         """
         if not df_wl.empty:
             df_wl_trend = df_wl
@@ -54,6 +54,9 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         """
         product specific pre formating to convert API response to valid
         data arrays.
+        :param data: raw water level data received from IWLS API call (json)
+        :return: processed water level data (dict)
+
         """
         # Convert JSON data to Pandas tables
         df_wlp = self._gen_data_table(data,'wlp')
@@ -109,6 +112,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _update_product_specific_general_metadata(self,h5_file):
         """
         Update product specific (S-104) general metadata.
+        :param h5_file: h5 file to update (hdf5)
         """
         # No Changes from Template
         pass
@@ -118,7 +122,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         Update feature level metadata (WaterLevel)
 
         :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
         # commonPointRule = no changes from template
         # dataCodingFormat = no changes from template
@@ -138,7 +142,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _create_groups(self,h5_file,data):
         """
         Create data groups for each station
-        :param h5_file: h5 file to update
+        :param h5_file: h5 file to update (hdf5)
         :param data: formatted data arrays generated from _format_data_arrays
         """
         no_of_instances = len(data['dataset_types'])

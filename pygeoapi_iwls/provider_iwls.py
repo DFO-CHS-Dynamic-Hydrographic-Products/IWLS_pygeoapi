@@ -142,12 +142,12 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_station_data(self,identifier,start_time,end_time,api):
         """
         Used by Get Method
-        :param identifier: station ID
-        :param start_time: Start time (ISO 8601)
-        :param end_time: End time (ISO 8601)
-        :param api: api connection to IWLS
+        :param identifier: station ID (int)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param api: api connection to IWLS (IwlsApiConnector)
 
-        :returns: GeoJSON feature
+        :returns: GeoJSON feature (json)
         """
 
         station_data = api.get_station_data(identifier,start_time,end_time, dtype='wcs')
@@ -156,14 +156,14 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex,api):
         """
         Used by Query Method
-        :start_time: Start time (ISO 8601)
-        :end_time: End time (ISO 8601)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
-        :param limit: number of records to return (default 10)
-        :param startindex: starting record to return (default 0)
-        :param api: api connection to IWLS
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
+        :param limit: number of records to return (default 10) (int)
+        :param startindex: starting record to return (default 0) (int)
+        :param api: api connection to IWLS (IwlsApiConnector)
 
-        :returns: dict of 0..n GeoJSON features
+        :returns: dict of 0..n GeoJSON features (json)
         """
         timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex, dtype='wcs')
         return timeseries

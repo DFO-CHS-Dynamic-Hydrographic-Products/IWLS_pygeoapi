@@ -18,9 +18,9 @@ class S100GeneratorDCF8():
     def __init__(self, json_path, folder_path,template_path):
         """
         S100GeneratorDCF8 init method
-        :param json_path: path to geojson to process
-        :param folder_path: path to processing folder
-        :param template_path: path to S-100 h5 file production template
+        :param json_path: path to geojson to process (string)
+        :param folder_path: path to processing folder (string)
+        :param template_path: path to S-100 h5 file production template (string)
         """
         self.folder_path = folder_path
         self.json_path = json_path
@@ -35,7 +35,7 @@ class S100GeneratorDCF8():
     def create_s100_tiles_from_template(self,grid_path):
         """
         Create S-100 tiles from production template
-        :param grid_path: path to geojson tile grid
+        :param grid_path: path to geojson tile grid (string)
         """
         # Load Json and convert to python dict
         with open(self.json_path) as data_file:
@@ -71,9 +71,9 @@ class S100GeneratorDCF8():
     def _create_s100_dcf8(self,s100_data,filename,bbox):
         """
         Create single S-100  file from production template
-        :param s100_data: Data to include in file
-        :param filename: name of S-100 file
-        :param bbox: file limit
+        :param s100_data: Data to include in file (dict)
+        :param filename: name of S-100 file (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
         """
         # Create file from template in working folder
         s100_path = os.path.join(self.folder_path, filename)
@@ -99,9 +99,9 @@ class S100GeneratorDCF8():
     def _update_general_metadata(self,h5_file,filename,bbox):
         """
         Update general metadata (file level)
-        :param h5_file: h5 file to update
+        :param h5_file: h5 file to update (hdf5)
         :param filename: h5 file name (string)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
         """
         # eastBoundLongitude
         east_lon= bbox[2]
@@ -136,9 +136,9 @@ class S100GeneratorDCF8():
     def _gen_data_table(self,s100_data,code):
         """
         Generate dataframe of water level information needed to produce S-100 files
-        :param s100_data: iwls json timeseries
-        :param code: data type code
-        :return df: dataframe of water level information needed to produce S-100 files
+        :param s100_data: iwls json timeseries (Json)
+        :param code: data type code (string)
+        :return df: dataframe of water level information needed to produce S-100 files (pandas Dataframe)
         """
         data_list = []
         for i in  s100_data:
@@ -158,8 +158,8 @@ class S100GeneratorDCF8():
     def _gen_positions(self,df):
         """
         Generate position for stations
-        :param df: pandas data frame of water level or current information information
-        :return position: Dictionnary of latitudes and longitudes
+        :param df: pandas data frame of water level or current information information (pandas Dataframe)
+        :return position: latitudes and longitudes (dict)
         """
         lat = [float(i.split("$")[2]) for i in df.columns]
         lon = [float(i.split("$")[3]) for i in df.columns]
