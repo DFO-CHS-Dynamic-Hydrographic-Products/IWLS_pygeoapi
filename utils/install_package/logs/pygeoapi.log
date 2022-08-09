@@ -1,9 +1,0 @@
-[2022-08-08T15:27:52Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} WARNING -  * Running on all addresses.
-   WARNING: This is a development server. Do not use it in a production deployment.
-[2022-08-08T15:27:52Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} INFO -  * Running on http://192.168.0.197:5000/ (Press CTRL+C to quit)
-[2022-08-08T15:27:52Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} INFO -  * Restarting with stat
-[2022-08-08T15:27:52Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} WARNING -  * Debugger is active!
-[2022-08-08T15:27:52Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} INFO -  * Debugger PIN: 414-842-819
-[2022-08-08T15:28:13Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} INFO - 127.0.0.1 - - [08/Aug/2022 15:28:13] "POST /processes/s100/execution HTTP/1.1" 200 -
-[2022-08-08T15:28:28Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} WARNING -  * Debugger is active!
-[2022-08-08T15:28:28Z] {/Library/Frameworks/Python.framework/Versions/3.8/lib/python3.8/site-packages/werkzeug/_internal.py:225} INFO -  * Debugger PIN: 414-842-819
