@@ -2,6 +2,8 @@
 
 mkdir -p install/src/provider_iwls
 touch install/src/provider_iwls/__init__.py
+cp ./utils/compile_wheel/setup.py ./install
+cp ./utils/compile_wheel/README.md ./install
 cp ./pygeoapi_iwls/provider_iwls.py ./install/src/provider_iwls
 cp ./pygeoapi_iwls/s104.py ./install/src/provider_iwls
 cp ./pygeoapi_iwls/s111.py ./install/src/provider_iwls

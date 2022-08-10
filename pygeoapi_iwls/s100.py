@@ -3,6 +3,7 @@ import json
 import os
 import shutil
 import datetime
+import logging
 
 # Packages imports
 from pathlib import Path
@@ -65,8 +66,6 @@ class S100GeneratorDCF8():
             grid_list = json.load(grid_file)['features']
 
         # Loop over every cells and generate S-100 if data exists in request
-        print("grid list")
-        print(type(grid_list))
         for i in grid_list:
             polygon = i['geometry']['coordinates'][0]
             cell_max_lat = max([x[1] for x in polygon])
@@ -167,18 +166,16 @@ class S100GeneratorDCF8():
         self._update_product_specific_general_metadata(h5_file)
 
     def _gen_data_table(self,
-                        s100_data,
-                        code
+                        s100_data: list,
+                        code: str
     ):
         """
         Generate dataframe of water level information needed to produce S-100 files
-        :param s100_data: iwls json timeseries
-        :param code: data type code
+        :param list s100_data: iwls json timeseries
+        :param str code: data type code
         :return df: dataframe of water level information needed to produce S-100 files
         """
-        print("code")
-        print(type(code))
-        print(type(s100_data))
+
         data_list = []
         for i in  s100_data:
             if i['properties'][code]:
@@ -248,14 +245,12 @@ class S100GeneratorDCF8():
         """
         Create data attributes for each station
         :param h5py._hl.group.Group group: Root group to assign values
-        :param dataset1:
-        :param dataset2:
+        :param pd.core.frame.DataFrame dataset1: TODO
+        :param pd.core.frame.DataFrame dataset2: TODO
 
         """
         assert self.dataset_names is not None, \
             "Must invoke S104 or S111 class to get the dataset names"
-        print("test")
-        print(type(dataset1))
 
         ### Create Instance Metadata ###
 
@@ -263,76 +258,29 @@ class S100GeneratorDCF8():
 
         # numberOfTimes
         s100_util.create_modify_attribute(group, 'numberOfTimes', len(dataset1))
-        time_record_interval = int((dataset1.index[1] - dataset1.index[0]).total_seconds())
-        print("numoftimes")
 
         # timeRecordInterval
+        time_record_interval = int((dataset1.index[1] - dataset1.index[0]).total_seconds())
         s100_util.create_modify_attribute(group, 'timeRecordInterval', time_record_interval)
-        print("timerecinterval")
-
         # dateTimeofFirstRecord
         start_datetime = dataset1.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
-        s100_util.create_modify_attribute(group, 'dateTimeOfFirstRecord', start_datetime)
-        print("start_datetime")
-        print(start_datetime)
 
+        s100_util.create_modify_attribute(group, 'dateTimeOfFirstRecord', start_datetime)
         # dateTimeOfLastRecord
         end_datetime = dataset1.index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
         s100_util.create_modify_attribute(group, 'dateTimeOfLastRecord', end_datetime)
-        print("datetimelastrecord")
-        print(end_datetime)
-#        print(start_datetime-end_datetime)
-#        print(end_datetime-start_datetime)
 
         # numGroups
         num_groups = dataset1.shape[1]
         s100_util.create_modify_attribute(group, 'numGRP', num_groups)
-        print("numgroups")
-        print(num_groups)
 
-        for i in range(1, num_groups):
-            # Create Group
-            group_path = '{product_id}/{product_id}.0{group_counter}/Group_{group_no}'.format(
-                product_id=self.product_id,
-                group_counter= str(group_counter),
-                group_no= str(i).zfill(3)
-            )
-            print(group_path)
-#            group_path = instance_group_path + '/Group_' + str(group_counter).zfill(3)
-            group = h5_file.create_group(group_path)
+        # Instansiate dataclass to store Attribute Data
+        attr_data = s100_util.AttributeData(num_groups, start_datetime, end_datetime, time_record_interval)
 
-            ### Create Group Metadata ##
+        # Populate metadata for each group
+        self._populate_group_metadata(h5_file, dataset1, dataset2, group_counter, attr_data)
 
-            # endDateTime
-            group.attrs.create('endDateTime', end_datetime)
-            print("endtime")
 
-            # numberOfTimes
-            group.attrs.create('numberOfTimes', num_groups)
-            print("numtimes")
-
-            # startDateTime
-            group.attrs.create('startDateTime', start_datetime)
-
-            # stationIdentification
-            stn_id = dataset1.columns[i].split("$")[0]
-            group.attrs.create('stationIdentification', stn_id)
-
-            # stationName
-            stn_name = dataset1.columns[i].split("$")[1]
-            group.attrs.create('stationName', stn_name)
-
-            # timeIntervalIndex
-            group.attrs.create('timeIntervalIndex', 1)
-
-            # timeRecordInterval
-            group.attrs.create('timeRecordInterval', time_record_interval)
-
-            values = list(zip(dataset1.iloc[:, i].to_list(), dataset2.iloc[:, i].to_list()))
-
-            values_type = np.dtype([(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)])
-
-            group.create_dataset('values',data=values,dtype=values_type)
 
     def _create_positioning_group(self,
                                  h5_file: h5py._hl.files.File,
@@ -362,3 +310,55 @@ class S100GeneratorDCF8():
         positioning.create_dataset(
             'geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type
         )
+
+    def _populate_group_metadata(self,
+                                 h5_file,
+                                 dataset1,
+                                 dataset2,
+                                 group_counter,
+                                 attr_data
+        ):
+
+        for i in range(1, attr_data.num_groups):
+            # Create Group
+            group_path = '{product_id}/{product_id}.0{group_counter}/Group_{group_no}'.format(
+                product_id=self.product_id,
+                group_counter= str(group_counter),
+                group_no= str(i).zfill(3)
+            )
+            group = h5_file.create_group(group_path)
+
+            ### Create Group Metadata ##
+
+            # endDateTime
+            group.attrs.create('endDateTime', attr_data.end_datetime)
+
+            # numberOfTimes
+            group.attrs.create('numberOfTimes', attr_data.num_groups)
+
+            # startDateTime
+            group.attrs.create('startDateTime', attr_data.start_datetime)
+
+            # stationIdentification
+            stn_id = dataset1.columns[i].split("$")[0]
+            group.attrs.create('stationIdentification', stn_id)
+
+            # stationName
+            stn_name = dataset1.columns[i].split("$")[1]
+            group.attrs.create('stationName', stn_name)
+
+            # timeIntervalIndex
+            group.attrs.create('timeIntervalIndex', 1)
+
+            # timeRecordInterval
+            group.attrs.create('timeRecordInterval', attr_data.time_record_interval)
+
+            # Create dataset containing waterlevel or surface current data
+
+            values = list(zip(dataset1.iloc[:, i].to_list(), dataset2.iloc[:, i].to_list()))
+
+            values_type = np.dtype(
+                [(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)]
+            )
+
+            group.create_dataset('values',data=values,dtype=values_type)

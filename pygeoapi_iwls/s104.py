@@ -167,7 +167,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             instance_wl = data['wl'][data_type]
             instance_trend = data['trend'][data_type]
             instance_position = data['position'][data_type]
-            print("creating groups")
 
             instance_group_path = '{product_id}/{product_id}.0{group_counter}'.format(product_id = self.product_id, group_counter = str(i+1))
 
@@ -194,14 +193,11 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
             instance_group.attrs.create('typeOfWaterLevelData', wl_type, dtype=dt_wl_type)
             instance_group.attrs.create('numberOfStations', instance_wl.shape[1])
-            print("about to create attributes")
 
             ### Create atttributes
             self._create_attributes(h5_file, instance_group, instance_wl, instance_trend, group_counter=i)
-            print("created attributes")
 
             ### Create Positioning Group ###
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )
-            print("testing instances")
