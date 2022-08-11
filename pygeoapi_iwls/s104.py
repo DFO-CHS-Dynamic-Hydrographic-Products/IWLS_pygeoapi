@@ -164,9 +164,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             ### Create Instance Group ###
             data_type = data['dataset_types'][i]
             instance_position = data['position'][data_type]
+            x = i + 1
 
             # Create group to assign attribute metadata and datasets for each station
-            instance_group_path = f'{self.product_id}/{self.product_id}.0{i+1}'
+            instance_group_path = f'{self.product_id}/{self.product_id}.0{x}'
             # Ensure that the group exists
             assert not h5_file[self.product_id].__contains__(instance_group_path), f"Group: {instance_group_path} exists already, cannot recreate a group that already exists"
             instance_wl_group = h5_file.create_group(instance_group_path)

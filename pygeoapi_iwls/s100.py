@@ -259,7 +259,8 @@ class S100GeneratorDCF8():
 #        assert group in h5_file, "Group/dataset must exist" + str(group)
 
         # numberOfTimes
-        s100_util.create_modify_attribute(group, 'numberOfTimes', len(dataset1))
+        num_times = len(dataset1)
+        s100_util.create_modify_attribute(group, 'numberOfTimes', num_times)
 
         # timeRecordInterval
         time_record_interval = int((dataset1.index[1] - dataset1.index[0]).total_seconds())
@@ -277,7 +278,7 @@ class S100GeneratorDCF8():
         s100_util.create_modify_attribute(group, 'numGRP', num_groups)
 
         # Instansiate dataclass to store Attribute Data
-        attr_data = s100_util.AttributeData(num_groups, start_datetime, end_datetime, time_record_interval)
+        attr_data = s100_util.AttributeData(num_groups, start_datetime, end_datetime, time_record_interval, dataset1.shape[0])
 
         # Populate metadata for each group
         self._populate_group_metadata(h5_file, datasets, group_counter, attr_data)
@@ -336,7 +337,8 @@ class S100GeneratorDCF8():
             group.attrs.create('endDateTime', attr_data.end_datetime)
 
             # numberOfTimes
-            group.attrs.create('numberOfTimes', attr_data.num_groups)
+            print(attr_data.num_times)
+            group.attrs.create('numberOfTimes', attr_data.num_times)
 
             # startDateTime
             group.attrs.create('startDateTime', attr_data.start_datetime)
