@@ -36,7 +36,8 @@ class ProviderIwls(BaseProvider):
     def get(self, identifier, **kwargs):
         """
         Get Feature by id
-        :param identifier: feature id
+        :param identifier: feature id (int)
+        
         :returns: feature collection
         """
         result = None
