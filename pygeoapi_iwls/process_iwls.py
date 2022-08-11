@@ -216,8 +216,9 @@ class S100Processor(BaseProcessor):
             print(t_end - t_start)
 
             return 'application/zip', value
-        except Exception as e:
 
+        except Exception as e:
+            print(f'Error: {e}\nExiting process. See log file for more details.')
             logging.error(e, exc_info=True)
 
     def __repr__(self):

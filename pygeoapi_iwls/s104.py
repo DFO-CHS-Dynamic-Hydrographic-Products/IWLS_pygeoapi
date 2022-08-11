@@ -126,7 +126,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update feature level metadata (WaterLevel)
-
         :param h5_file: h5 file to update
         :param data: formatted data arrays generated from _format_data_arrays
         """
@@ -164,13 +163,13 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
             ### Create Instance Group ###
             data_type = data['dataset_types'][i]
-            instance_wl = data['wl'][data_type]
-            instance_trend = data['trend'][data_type]
             instance_position = data['position'][data_type]
 
-            instance_group_path = '{product_id}/{product_id}.0{group_counter}'.format(product_id = self.product_id, group_counter = str(i+1))
-
-            instance_group = h5_file.create_group(instance_group_path)
+            # Create group to assign attribute metadata and datasets for each station
+            instance_group_path = f'{self.product_id}/{self.product_id}.0{i+1}'
+            # Ensure that the group exists
+            assert not h5_file[self.product_id].__contains__(instance_group_path), f"Group: {instance_group_path} exists already, cannot recreate a group that already exists"
+            instance_wl_group = h5_file.create_group(instance_group_path)
 
             # typeOfWaterLevelData
             dt_wl_type = h5py.enum_dtype({
@@ -191,11 +190,13 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             else:
                 wl_type = 5
 
-            instance_group.attrs.create('typeOfWaterLevelData', wl_type, dtype=dt_wl_type)
-            instance_group.attrs.create('numberOfStations', instance_wl.shape[1])
+            instance_wl_group.attrs.create('typeOfWaterLevelData', wl_type, dtype=dt_wl_type)
+            instance_wl_group.attrs.create('numberOfStations', data['wl'][data_type].shape[1])
+
+            datasets = (data['wl'][data_type],  data['trend'][data_type])
 
             ### Create atttributes
-            self._create_attributes(h5_file, instance_group, instance_wl, instance_trend, group_counter=i)
+            self._create_attributes(h5_file, instance_wl_group, datasets, group_counter=i)
 
             ### Create Positioning Group ###
             self._create_positioning_group(

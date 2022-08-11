@@ -237,8 +237,7 @@ class S100GeneratorDCF8():
     def _create_attributes(self,
                            h5_file: h5py._hl.files.File,
                            group: h5py._hl.group.Group,
-                           dataset1,
-                           dataset2,
+                           datasets,
                            group_counter=1
 
     ):
@@ -249,6 +248,9 @@ class S100GeneratorDCF8():
         :param pd.core.frame.DataFrame dataset2: TODO
 
         """
+
+        dataset1, dataset2 = datasets
+
         assert self.dataset_names is not None, \
             "Must invoke S104 or S111 class to get the dataset names"
 
@@ -278,9 +280,7 @@ class S100GeneratorDCF8():
         attr_data = s100_util.AttributeData(num_groups, start_datetime, end_datetime, time_record_interval)
 
         # Populate metadata for each group
-        self._populate_group_metadata(h5_file, dataset1, dataset2, group_counter, attr_data)
-
-
+        self._populate_group_metadata(h5_file, datasets, group_counter, attr_data)
 
     def _create_positioning_group(self,
                                  h5_file: h5py._hl.files.File,
@@ -313,11 +313,12 @@ class S100GeneratorDCF8():
 
     def _populate_group_metadata(self,
                                  h5_file,
-                                 dataset1,
-                                 dataset2,
+                                 datasets,
                                  group_counter,
                                  attr_data
         ):
+
+        dataset1, dataset2 = datasets
 
         for i in range(1, attr_data.num_groups):
             # Create Group
@@ -326,6 +327,7 @@ class S100GeneratorDCF8():
                 group_counter= str(group_counter),
                 group_no= str(i).zfill(3)
             )
+
             group = h5_file.create_group(group_path)
 
             ### Create Group Metadata ##

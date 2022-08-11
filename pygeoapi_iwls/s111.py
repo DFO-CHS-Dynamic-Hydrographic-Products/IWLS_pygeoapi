@@ -73,7 +73,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
 
     def _create_groups(self,
                        h5_file: h5py._hl.files.File,
-                       data
+                       data: list
     ):
         """
         Create data groups for each station
@@ -89,10 +89,15 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
             product_id=self.product_id
         )
 
-        instance_sc = h5_file[instance_group_path]
+        # Ensure that the group exists
+        assert h5_file[self.product_id].__contains__(f'{self.product_id}.01'), f"Group: {instance_group_path} does not exist, cannot write to it"
+
+        instance_sc_group = h5_file[instance_group_path]
+
+        datasets = (data['wcs'], data['wcd'])
 
         ### Create and populate data groups ###
-        self._create_attributes(h5_file, instance_sc, data['wcs'], data['wcd'])
+        self._create_attributes(h5_file, instance_sc_group, datasets)
 
         ### Create Positioning Group ###
         self._create_positioning_group(
