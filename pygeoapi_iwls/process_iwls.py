@@ -135,15 +135,15 @@ class S100Processor(BaseProcessor):
         # Get Request parameters from Inputs
         start_time = data['start_time']
         if start_time is None:
-            raise ProcessorExecuteError('Cannot process without a valid Start Time')
+            raise ProcessorExecuteError('Cannot process without a valid ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) Start Time')
 
         end_time = data['end_time']
         if end_time is None:
-            raise ProcessorExecuteError('Cannot process without a valid End Time')
+            raise ProcessorExecuteError('Cannot process without a valid ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) End Time')
 
         bbox_string = data['bbox']
         if bbox_string is None:
-            raise ProcessorExecuteError('Cannot process without a Bounding Box') 
+            raise ProcessorExecuteError('Cannot process without a Bounding Box [minx,miny,maxx,maxy], Latitude and Longitude (WGS84)') 
 
         layer = data['layer']
         if layer != 'S104' and layer != 'S111':

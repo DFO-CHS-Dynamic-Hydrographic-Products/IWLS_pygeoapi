@@ -27,10 +27,6 @@ class S100GeneratorDCF8():
         self.template_path = template_path
         # Overide with correct layer in child class
         self.file_type = '100'
-        # Raise error if incorect layer type is passed
-        if self.file_type == '111' or self.file_type == '104':
-            raise ValueError('Invalid file_type,must be 104 or 111')
-
 
     def create_s100_tiles_from_template(self,grid_path):
         """

@@ -177,10 +177,10 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
             time_record_interval = int((instance_wl.index[1] - instance_wl.index[0]).total_seconds())
             instance_group.attrs.create('timeRecordInterval', time_record_interval)
             # 7 Start Time
-            start_date_time = instance_wl.index[-0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+            start_date_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
             instance_group.attrs.create('dateTimeOfFirstRecord', start_date_time)
             # 8 End times
-            end_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+            end_time = instance_wl.index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
             instance_group.attrs.create('dateTimeOfLastRecord', end_time)
             # 9 num groups
             num_groups = instance_wl.shape[1]
