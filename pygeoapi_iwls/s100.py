@@ -244,8 +244,8 @@ class S100GeneratorDCF8():
         """
         Create data attributes for each station
         :param h5py._hl.group.Group group: Root group to assign values
-        :param pd.core.frame.DataFrame dataset1: TODO
-        :param pd.core.frame.DataFrame dataset2: TODO
+        :param pd.core.frame.DataFrame dataset1: Water level or surface current dataset
+        :param pd.core.frame.DataFrame dataset2: Water level trend or surface current direction dataset
 
         """
 
@@ -255,8 +255,6 @@ class S100GeneratorDCF8():
             "Must invoke S104 or S111 class to get the dataset names"
 
         ### Create Instance Metadata ###
-
-#        assert group in h5_file, "Group/dataset must exist" + str(group)
 
         # numberOfTimes
         num_times = len(dataset1)
@@ -321,15 +319,13 @@ class S100GeneratorDCF8():
 
         dataset1, dataset2 = datasets
 
-        for i in range(1, attr_data.num_groups):
+        for i in range(attr_data.num_groups):
             # Create Group
-            group_path = '{product_id}/{product_id}.0{group_counter}/Group_{group_no}'.format(
-                product_id=self.product_id,
-                group_counter= str(group_counter),
-                group_no= str(i).zfill(3)
-            )
+            group_path = f'{self.product_id}/{self.product_id}.0{group_counter}/Group_{str(i+1).zfill(3)}'
 
             group = h5_file.create_group(group_path)
+            import pdb
+            pdb.set_trace()
 
             ### Create Group Metadata ##
 
@@ -337,7 +333,6 @@ class S100GeneratorDCF8():
             group.attrs.create('endDateTime', attr_data.end_datetime)
 
             # numberOfTimes
-            print(attr_data.num_times)
             group.attrs.create('numberOfTimes', attr_data.num_times)
 
             # startDateTime
