@@ -23,7 +23,11 @@ class S100GeneratorDCF8():
     def __init__(self,
                  json_path: str,
                  folder_path: str,
-                 template_path: str
+                 template_path: str,
+                 dataset_names: tuple,
+                 dataset_types: tuple,
+                 product_id: str,
+                 file_type: str
     ):
         """
 
@@ -35,13 +39,10 @@ class S100GeneratorDCF8():
         self.folder_path = Path(folder_path)
         self.json_path = Path(json_path)
         self.template_path = Path(template_path)
-        self.dataset_names = None
-        self.product_id = None
-        # Overide with correct layer in child class
-        self.file_type = '100'
-        # Raise error if incorect layer type is passed
-        if self.file_type == '111' or self.file_type == '104':
-            raise ValueError('Invalid file_type,must be 104 or 111')
+        self.dataset_names = dataset_names
+        self.dataset_types = dataset_types
+        self.product_id = product_id
+        self.file_type = file_type
 
 
     def create_s100_tiles_from_template(self,
@@ -324,8 +325,6 @@ class S100GeneratorDCF8():
             group_path = f'{self.product_id}/{self.product_id}.0{group_counter}/Group_{str(i+1).zfill(3)}'
 
             group = h5_file.create_group(group_path)
-            import pdb
-            pdb.set_trace()
 
             ### Create Group Metadata ##
 
@@ -357,7 +356,7 @@ class S100GeneratorDCF8():
             values = list(zip(dataset1.iloc[:, i].to_list(), dataset2.iloc[:, i].to_list()))
 
             values_type = np.dtype(
-                [(self.dataset_names[0],np.float64),(self.dataset_names[1] ,np.float64)]
+                [(self.dataset_names[0], self.dataset_types[0]),(self.dataset_names[1] , self.dataset_types[1])]
             )
 
             group.create_dataset('values',data=values,dtype=values_type)

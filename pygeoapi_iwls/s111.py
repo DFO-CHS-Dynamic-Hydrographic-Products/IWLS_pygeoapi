@@ -1,5 +1,6 @@
 # Standard library imports
 import h5py
+import numpy as np
 
 # Import local files
 from provider_iwls.s100 import S100GeneratorDCF8
@@ -9,12 +10,16 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
+
     def __init__(self, json_path, folder_path,template_path):
-        super().__init__(json_path, folder_path,template_path)
-        # overide file type from base class
-        self.file_type = '111'
-        self.product_id = 'SurfaceCurrent'
-        self.dataset_names = ('surfaceCurrentSpeed', 'surfaceCurrentDirection')
+        super().__init__(json_path=json_path,
+                         folder_path=folder_path,
+                         template_path=template_path,
+                         dataset_names= ('surfaceCurrentSpeed', 'surfaceCurrentDirection'),
+                         dataset_types= (np.float64, np.float64),
+                         product_id= 'SurfaceCurrent',
+                         file_type= '111')
+
 
     def _format_data_arrays(self,data):
         """

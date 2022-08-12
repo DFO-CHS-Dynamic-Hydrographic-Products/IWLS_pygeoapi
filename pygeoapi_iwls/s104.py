@@ -12,12 +12,15 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     class for generating S-111 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100GeneratorDCF8
     """
+
     def __init__(self, json_path, folder_path, template_path):
-        super().__init__(json_path, folder_path, template_path)
-        # overide file type from base class
-        self.file_type = '104'
-        self.product_id = 'WaterLevel'
-        self.dataset_names = ('waterLevelHeight', 'waterLevelTrend')
+        super().__init__(json_path=json_path,
+                         folder_path=folder_path,
+                         template_path=template_path,
+                         dataset_names= ('waterLevelHeight', 'waterLevelTrend'),
+                         dataset_types= (np.float64, np.int8),
+                         product_id= 'WaterLevel',
+                         file_type= '104')
 
 
     def _get_flags(self,
