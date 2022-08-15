@@ -41,7 +41,7 @@ class IwlsApiConnector:
         r.raise_for_status()
         data_json = r.json()
         df = pd.DataFrame.from_dict(data_json)
-
+        
         return df
 
 
@@ -234,6 +234,9 @@ class IwlsApiConnector:
         within_lat = self.info['latitude'].between(bbox[1], bbox[3])
         within_lon = self.info['longitude'].between(bbox[0], bbox[2])
         stations_list = self.info[within_lat & within_lon]
+        # If surface currents, filter out stations with only water level observations
+        if dtype =='wcs':
+            stations_list = stations_list[stations_list['timeSeries'].astype(str).str.contains('wcs1')]
         # Only Query stations up  from start index to limit
         end_index = startindex + limit
         stations_list = stations_list[startindex:end_index]
@@ -256,7 +259,7 @@ class IwlsApiConnector:
         elif dtype == 'wcs':
             for stn in stations_list.code.iteritems():
                 feature = self.get_station_data(stn[1],start_time,end_time,'wcs')
-                features.append(feature)
+                features.append(feature)      
             geojson ['features'] = features
 
         else:
@@ -267,8 +270,3 @@ class IwlsApiConnector:
             json.dump(geojson, f, ensure_ascii=False, indent=4)
         
         return geojson
-
-api = IwlsApiConnector()
-data = api.get_timeseries_by_boundary('2022-06-19T16:00:00Z','2022-06-19T22:00:00Z',[-123.28,49.07,-123.01,49.35],dtype='wcs')
-with open('s111_test.json', 'w') as f:
-    json.dump(data, f,indent=4)
