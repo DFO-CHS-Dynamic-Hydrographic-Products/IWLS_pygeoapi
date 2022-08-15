@@ -98,6 +98,8 @@ class S100GeneratorDCF8():
         :param filename: name of S-100 file
         :param bbox: file limit
         """
+        print("s100 data")
+        print(type(s100_data))
         # Create file from template in working folder
         s100_path = os.path.join(self.folder_path, filename)
         shutil.copy(self.template_path,s100_path)
@@ -112,7 +114,10 @@ class S100GeneratorDCF8():
             ### Create and populate group arrays ###
             self._create_groups(h5_file,data_arrays)
 
-    def _format_data_arrays(self):
+    def _format_data_arrays(
+            self,
+            data: list
+    ):
         """
         product specific pre formating to convert API response to valid
         data arrays. Must be implemented by child class
@@ -191,8 +196,9 @@ class S100GeneratorDCF8():
 
         return pd.DataFrame()
 
-    def _gen_positions(self,
-                       df: pd.core.frame.DataFrame
+    def _gen_positions(
+            self,
+            df: pd.core.frame.DataFrame
     ):
         """
         Generate position for stations
@@ -206,8 +212,9 @@ class S100GeneratorDCF8():
 
         return position
 
-    def _update_product_specific_general_metadata(self,
-                                                  h5_file: h5py._hl.files.File
+    def _update_product_specific_general_metadata(
+            self,
+            h5_file: h5py._hl.files.File
     ):
         """
         Update product specific general metadata.
@@ -215,9 +222,10 @@ class S100GeneratorDCF8():
         """
         raise NotImplementedError('Must override _update_product_specific_general_metadata')
 
-    def _update_feature_metadata(self,
-                                 h5_file: h5py._hl.files.File,
-                                 data
+    def _update_feature_metadata(
+            self,
+            h5_file: h5py._hl.files.File,
+            data: dict
     ):
         """
         Update feature level metadata
@@ -227,7 +235,7 @@ class S100GeneratorDCF8():
 
     def _create_groups(self,
                        h5_file: h5py._hl.files.File,
-                       data
+                       data: dict
     ):
         """
         Update feature level metadata
@@ -238,7 +246,7 @@ class S100GeneratorDCF8():
     def _create_attributes(self,
                            h5_file: h5py._hl.files.File,
                            group: h5py._hl.group.Group,
-                           datasets,
+                           datasets: tuple,
                            group_counter=1
 
     ):

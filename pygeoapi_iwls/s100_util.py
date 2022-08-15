@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import h5py
 
 @dataclass
 class AttributeData:
@@ -9,7 +10,11 @@ class AttributeData:
     time_record_interval: int
     num_times: int
 
-def create_modify_attribute(group, attribute_name, attribute_value):
+def create_modify_attribute(
+        group: h5py._hl.group.Group,
+        attribute_name: str,
+        attribute_value: str
+    ):
 
     if group.attrs.__contains__(attribute_name):
         group.attrs.modify(attribute_name, attribute_value)

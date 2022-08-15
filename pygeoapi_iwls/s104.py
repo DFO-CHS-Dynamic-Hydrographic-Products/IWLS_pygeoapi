@@ -13,7 +13,13 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     files. Inherit from S100GeneratorDCF8
     """
 
-    def __init__(self, json_path, folder_path, template_path):
+    def __init__(
+            self,
+            json_path: str,
+            folder_path: str,
+            template_path: str
+    ):
+        # Call s100 base class with preconfigured S104 data
         super().__init__(json_path=json_path,
                          folder_path=folder_path,
                          template_path=template_path,
@@ -23,9 +29,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
                          file_type= '104')
 
 
-    def _get_flags(self,
-                   x,
-                   trend_treshold = 0.2
+    def _get_flags(
+            self,
+            x: float,
+            trend_treshold = 0.2
     ):
         """
         Transform slope value to trend flag:
@@ -42,7 +49,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         else:
             return 0
 
-    def _gen_S104_trends(self,df_wl):
+    def _gen_S104_trends(
+            self,
+            df_wl: pd.core.frame.DataFrame
+    ):
         """
         Generate water level trend flags from water level values
         :param df_wl: pandas dataframe containing water level values
@@ -58,7 +68,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         else:
             return pd.DataFrame()
 
-    def _format_data_arrays(self,data):
+    def _format_data_arrays(
+            self,
+            data: list
+    ):
         """
         product specific pre formating to convert API response to valid
         data arrays.
@@ -114,8 +127,9 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         return  data_arrays
 
 
-    def _update_product_specific_general_metadata(self,
-                                                  h5_file: h5py._hl.files.File
+    def _update_product_specific_general_metadata(
+            self,
+            h5_file: h5py._hl.files.File
     ):
         """
         Update product specific (S-104) general metadata.
@@ -123,9 +137,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # No Changes from Template
         pass
 
-    def _update_feature_metadata(self,
-                                 h5_file: h5py._hl.files.File,
-                                 data
+    def _update_feature_metadata(
+            self,
+            h5_file: h5py._hl.files.File,
+            data: dict
     ):
         """
         Update feature level metadata (WaterLevel)
@@ -150,9 +165,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # numInstance
         h5_file[self.product_id].attrs.modify('numInstances',len(data['dataset_types']))
 
-    def _create_groups(self,
-                       h5_file: h5py._hl.files.File,
-                       data
+    def _create_groups(
+            self,
+            h5_file: h5py._hl.files.File,
+            data: dict
     ):
         """
         Create data groups for each station
@@ -173,10 +189,12 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
             # Ensure that the group exists
             assert not h5_file[self.product_id].__contains__(instance_group_path), f"Group: {instance_group_path} exists already, cannot recreate a group that already exists"
+
+            # Configure root group to attach datasets for each station
             instance_wl_group = h5_file.create_group(instance_group_path)
 
 
-            # typeOfWaterLevelData
+            # configure typeOfWaterLevelData enum
             dt_wl_type = h5py.enum_dtype({
                 'Observation': 1,
                 'Astronomical prediction': 2,
@@ -195,9 +213,12 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             else:
                 wl_type = 5
 
+            # typeOfWaterLevelData
             instance_wl_group.attrs.create('typeOfWaterLevelData', wl_type, dtype=dt_wl_type)
-            instance_wl_group.attrs.create('numberOfStations', data['wl'][data_type].shape[1])
-
+            # numberOfStations
+            instance_wl_group.attrs.create('numberOfStations', data['wl'][data_type].shape[1]
+)
+            # Parse datasets into a tuple
             datasets = (data['wl'][data_type],  data['trend'][data_type])
 
             ### Create atttributes

@@ -11,7 +11,13 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
     files. Inherit from S100GeneratorDCF8
     """
 
-    def __init__(self, json_path, folder_path,template_path):
+    def __init__(
+            self,
+            json_path: str,
+            folder_path: str,
+            template_path: str
+    ):
+        # Call s100 base class with preconfigured S111 data
         super().__init__(json_path=json_path,
                          folder_path=folder_path,
                          template_path=template_path,
@@ -21,7 +27,10 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
                          file_type= '111')
 
 
-    def _format_data_arrays(self,data):
+    def _format_data_arrays(
+            self,
+            data: list
+    ):
         """
         product specific pre formating to convert API response to valid
         data arrays. Must be implemented by child class
@@ -41,9 +50,12 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         position = self._gen_positions(wcs)
         data_arrays = {'wcs':wcs,'wcd':wcd,'position':position,'max':dataset_max,'min':dataset_min}
 
-        return  data_arrays
+        return data_arrays
 
-    def _update_product_specific_general_metadata(self, h5_file):
+    def _update_product_specific_general_metadata(
+            self,
+            h5_file: h5py._hl.files.File,
+    ):
         """
         Update product specific (S-111) general metadata.
         :param h5_file: h5 file to update
@@ -53,7 +65,11 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         # create here for now and move to template when 1.1.1 is finalized
         h5_file.attrs.create('surfaceCurrentDepth',1.0)
 
-    def _update_feature_metadata(self, h5_file, data):
+    def _update_feature_metadata(
+            self,
+            h5_file: h5py._hl.files.File,
+            data: dict
+    ):
         """
         Update feature level metadata (SurfaceCurrent)
 
@@ -76,9 +92,10 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         h5_file[self.product_id].attrs.create('numInstances',data['wcs'].shape[1])
 
 
-    def _create_groups(self,
-                       h5_file: h5py._hl.files.File,
-                       data: list
+    def _create_groups(
+            self,
+            h5_file: h5py._hl.files.File,
+            data: dict
     ):
         """
         Create data groups for each station
@@ -97,8 +114,10 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         # Ensure that the group exists
         assert h5_file[self.product_id].__contains__(f'{self.product_id}.01'), f"Group: {instance_group_path} does not exist, cannot write to it"
 
+        # Configure root group to attach datasets for each station
         instance_sc_group = h5_file[instance_group_path]
 
+        # Parse datasets into a tuple
         datasets = (data['wcs'], data['wcd'])
 
         ### Create and populate data groups ###
