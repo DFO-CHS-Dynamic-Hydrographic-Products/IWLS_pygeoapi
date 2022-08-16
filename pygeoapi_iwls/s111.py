@@ -68,7 +68,8 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
     def _update_feature_metadata(
             self,
             h5_file: h5py._hl.files.File,
-            data: dict
+            data: dict,
+            metadata_attrs = None
     ):
         """
         Update feature level metadata (SurfaceCurrent)
@@ -81,15 +82,15 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         # dimension, No change from template
         # horizontalPositionUncertainty, currently unassessed
         # maxDatasetCurrentSpeed
-        h5_file[self.product_id].attrs.modify('maxDatasetCurrentSpeed',data['max'])
         # minDatasetCurrentSpeed
-        h5_file[self.product_id].attrs.modify('minDatasetCurrentSpeed',data['min'])
         # typeOfCurrentData, No change from template
         # verticalPositionUncertainty, currently unassessed
         # Number of Feature Instances
         # ToDo: numInstances is proposed for S111 1.1.1,
         # create here for now and move to template when 1.1.1 is finalized
-        h5_file[self.product_id].attrs.create('numInstances',data['wcs'].shape[1])
+
+        metadata_attrs = {'minDatasetCurrentSpeed': data['min'], 'maxDatasetCurrentSpeed': data['max'], 'numInstances': data['wcs'].shape[1]}
+        super()._update_feature_metadata(h5_file, data, metadata_attrs)
 
 
     def _create_groups(

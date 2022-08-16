@@ -1,5 +1,7 @@
 # This script should be run from root directory
-
+export PYGEOAPI_CONFIG=config_dev.yml
+export PYGEOAPI_OPENAPI=config.yml
+pygeoapi openapi generate $PYGEOAPI_CONFIG > $PYGEOAPI_OPENAPI
 mkdir -p install/src/provider_iwls
 touch install/src/provider_iwls/__init__.py
 cp ./utils/compile_wheel/setup.py ./install

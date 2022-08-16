@@ -98,8 +98,7 @@ class S100GeneratorDCF8():
         :param filename: name of S-100 file
         :param bbox: file limit
         """
-        print("s100 data")
-        print(type(s100_data))
+
         # Create file from template in working folder
         s100_path = os.path.join(self.folder_path, filename)
         shutil.copy(self.template_path,s100_path)
@@ -225,13 +224,19 @@ class S100GeneratorDCF8():
     def _update_feature_metadata(
             self,
             h5_file: h5py._hl.files.File,
-            data: dict
+            data: dict,
+            attr_data: dict
     ):
         """
         Update feature level metadata
         Must be implemented by child class
         """
-        raise NotImplementedError('Must override _update_feature_metadata')
+        # Create pointer to group that holds attributes
+        group = h5_file[self.product_id]
+
+        # Iterate through dict to update attribute items
+        for key, value in attr_data.items():
+            s100_util.create_modify_attribute(group, key, value)
 
     def _create_groups(self,
                        h5_file: h5py._hl.files.File,

@@ -102,7 +102,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
         wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf, 'spine':df_spine}
 
-
         # Create Positions Dict
         df_wlp_position = self._gen_positions(df_wlp)
         df_wlo_position = self._gen_positions(df_wlo)
@@ -126,7 +125,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
         return  data_arrays
 
-
     def _update_product_specific_general_metadata(
             self,
             h5_file: h5py._hl.files.File
@@ -140,7 +138,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     def _update_feature_metadata(
             self,
             h5_file: h5py._hl.files.File,
-            data: dict
+            data: dict,
+            metadata_attrs = None
     ):
         """
         Update feature level metadata (WaterLevel)
@@ -157,13 +156,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
 
-        h5_file[self.product_id].attrs.modify('maxDatasetHeight',data['max'])
-
-        # minDatasetHeight
-        h5_file[self.product_id].attrs.modify('minDatasetHeight',data['min'])
-
-        # numInstance
-        h5_file[self.product_id].attrs.modify('numInstances',len(data['dataset_types']))
+        metadata_attrs = {'minDatasetHeight': data['min'], 'maxDatasetHeight': data['max'], 'numInstances': len(data['dataset_types'])}
+        super()._update_feature_metadata(h5_file, data, metadata_attrs)
 
     def _create_groups(
             self,
