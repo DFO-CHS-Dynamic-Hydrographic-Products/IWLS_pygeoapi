@@ -215,7 +215,7 @@ class S100Processor(BaseProcessor):
             t_end = timer()
             print(t_end - t_start)
 
-            print("Completed process")
+            print("Completed Process")
 
             return 'application/zip', value
 
