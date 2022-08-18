@@ -37,23 +37,27 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _gen_S104_trends(self,df_wl):
         """
         Generate water level trend flags from water level values
-        :param df_wl: pandas dataframe containing water level values (pandas dataframe)
-        :return: pandas Dataframe containing trend Flags for respective water level values (pandas dataframe)
+        :param df_wl: pandas dataframe containing water level values (pandas.core.DataFrame)
+        :return: pandas Dataframe containing trend Flags for respective water level values (pandas.core.DataFrame)
         """
         if not df_wl.empty:
             df_wl_trend = df_wl
             interval = (df_wl_trend.index[1] - df_wl_trend.index[0]).total_seconds()
             timestamps_per_hour = int(3600 // interval)
-            # Create mask for NaN values
-            nan_mask = df_wl_trend.isna()
-            # Interpolate gaps
-            df_wl_trend = df_wl_trend.interpolate(method ='linear', limit_direction ='forward') 
-            # Calulate slope
-            slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(0,timestamps_per_hour),x)[0])
-            # Restore NaN
-            slope_values[nan_mask] = np.nan
-            # Get Trend Flags
-            df_trend = slope_values.apply(np.vectorize(self._get_flags))
+            #Interpolate gaps for trend calculation if NaNs are in dataset
+            if df_wl_trend.isna().values.any():
+                # Create mask for NaN values
+                nan_mask = df_wl_trend.isna()
+                # Interpolate gaps
+                df_wl_trend = df_wl_trend.interpolate(method ='linear', limit_direction ='forward') 
+                # Calulate slope
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+                # Restore NaN
+                slope_values[nan_mask] = np.nan
+                # Get Trend Flags
+                df_trend = slope_values.apply(np.vectorize(self._get_flags))
+            else:
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
             
             return df_trend 
         else:

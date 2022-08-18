@@ -134,7 +134,7 @@ class S100GeneratorDCF8():
         Generate dataframe of water level information needed to produce S-100 files
         :param s100_data: iwls json timeseries (Json)
         :param code: data type code (string)
-        :return df: dataframe of water level information needed to produce S-100 files (pandas Dataframe)
+        :return df: dataframe of water level information needed to produce S-100 files (pandas.core.DataFrame)
         """
         data_list = []
         for i in  s100_data:
@@ -154,7 +154,7 @@ class S100GeneratorDCF8():
     def _gen_positions(self,df):
         """
         Generate position for stations
-        :param df: pandas data frame of water level or current information information (pandas Dataframe)
+        :param df: pandas data frame of water level or current information information (pandas.core.DataFrame)
         :return position: latitudes and longitudes (dict)
         """
         lat = [float(i.split("$")[2]) for i in df.columns]

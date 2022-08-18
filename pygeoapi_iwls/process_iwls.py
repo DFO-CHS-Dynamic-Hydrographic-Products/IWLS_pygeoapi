@@ -102,7 +102,6 @@ class S100Processor(BaseProcessor):
         """
         Initialize object
         :param processor_def: provider definition
-        :PROCESS_METADATA: process description (json)
         :returns: pygeoapi.process.S100Processor
         """
 
