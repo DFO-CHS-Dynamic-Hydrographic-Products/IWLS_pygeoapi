@@ -131,6 +131,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update product specific (S-104) general metadata.
+
+        :param h5_file: h5 file to update (h5py._hl.files.File)
         """
         # No Changes from Template
         pass
@@ -143,8 +145,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update feature level metadata (WaterLevel)
-        :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param h5_file: h5 file to update (h5py._hl.files.File)
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
         # methodWaterLevelProduct = no changes from template
         # commonPointRule = no changes from template
@@ -166,8 +168,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Create data groups for each station
-        :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param h5_file: h5 file to update (h5py._hl.files.File)
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
         no_of_instances = len(data['dataset_types'])
 
@@ -186,7 +188,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
             # Configure root group to attach datasets for each station
             instance_wl_group = h5_file.create_group(instance_group_path)
-
 
             # configure typeOfWaterLevelData enum
             dt_wl_type = h5py.enum_dtype({

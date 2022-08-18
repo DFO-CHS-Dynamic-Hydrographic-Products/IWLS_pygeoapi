@@ -257,10 +257,10 @@ class S100GeneratorDCF8():
     ):
         """
         Create data attributes for each station
-        :param h5py._hl.group.Group group: Root group to assign values
-        :param pd.core.frame.DataFrame dataset1: Water level or surface current dataset
-        :param pd.core.frame.DataFrame dataset2: Water level trend or surface current direction dataset
-        :param int group_counter: Group count for each station
+        :param group: Root group to assign values (h5py._hl.group.Group)
+        :param dataset1: Water level or surface current dataset (pd.core.frame.DataFrame)
+        :param dataset2: Water level trend or surface current direction dataset (pd.core.frame.DataFrame)
+        :param group_counter: Group count for each station (int)
 
         """
 
@@ -334,10 +334,10 @@ class S100GeneratorDCF8():
         '''
         Creates the dataset groups and attaches associated attributes and datasets
 
-        :param h5py._hl.files.File h5_file: The output h5 file
-        :param tuple datasets: Tuple containing the two datasets
-        :param int group_counter: Group counter for each station
-        :param object attr_data: Attribute class that stores the metadata
+        :param h5_file: The output h5 file (h5py._hl.files.File)
+        :param datasets: Tuple containing the two datasets (tuple)
+        :param group_counter: Group counter for each station (int)
+        :param attr_data: Attribute class that stores the metadata (object)
         '''
         dataset1, dataset2 = datasets
 
