@@ -111,8 +111,7 @@ class S100Processor(BaseProcessor):
         """
         Execution Method
         :param data: User Input, format defined in PROCESS_METADATA
-        :PROCESS_METADATA: process description
-        :returns: MimeType: 'application/zip', zip archive of S-100 files
+        :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
 
         print("Processsing request")
@@ -135,15 +134,15 @@ class S100Processor(BaseProcessor):
         # Get Request parameters from Inputs
         start_time = data['start_time']
         if start_time is None:
-            raise ProcessorExecuteError('Cannot process without a valid Start Time')
+            raise ProcessorExecuteError('Cannot process without a valid ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) Start Time')
 
         end_time = data['end_time']
         if end_time is None:
-            raise ProcessorExecuteError('Cannot process without a valid End Time')
+            raise ProcessorExecuteError('Cannot process without a valid ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) End Time')
 
         bbox_string = data['bbox']
         if bbox_string is None:
-            raise ProcessorExecuteError('Cannot process without a Bounding Box') 
+            raise ProcessorExecuteError('Cannot process without a Bounding Box [minx,miny,maxx,maxy], Latitude and Longitude (WGS84)') 
 
         layer = data['layer']
         if layer != 'S104' and layer != 'S111':
@@ -163,7 +162,7 @@ class S100Processor(BaseProcessor):
         print("Sending Request to IWLS")
         t_start = timer()
         # Send Request to IWLS API and return geojson    
-         # Establish connection to IWLS API
+        # Establish connection to IWLS API
         api = IwlsApiConnector()
         # Pass query to IWLS API
         if layer == 'S104':

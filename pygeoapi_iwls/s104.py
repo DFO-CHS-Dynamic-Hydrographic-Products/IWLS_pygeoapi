@@ -21,7 +21,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
-        param x: slope value calculated with a 1 hour rolling window
+        param x: slope value calculated with a 1 hour rolling window (float)
         return: trend flag (int)
         """
         trend_treshold = 0.2
@@ -37,15 +37,28 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _gen_S104_trends(self,df_wl):
         """
         Generate water level trend flags from water level values
-        :param df_wl: pandas dataframe containing water level values
-        :return: pandas Dataframe containing trend Flags for respective water level values
+        :param df_wl: pandas dataframe containing water level values (pandas.core.DataFrame)
+        :return: pandas Dataframe containing trend Flags for respective water level values (pandas.core.DataFrame)
         """
         if not df_wl.empty:
             df_wl_trend = df_wl
             interval = (df_wl_trend.index[1] - df_wl_trend.index[0]).total_seconds()
             timestamps_per_hour = int(3600 // interval)
-            slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(0,timestamps_per_hour),x)[0])
-            df_trend = slope_values.apply(np.vectorize(self._get_flags))
+            #Interpolate gaps for trend calculation if NaNs are in dataset
+            if df_wl_trend.isna().values.any():
+                # Create mask for NaN values
+                nan_mask = df_wl_trend.isna()
+                # Interpolate gaps
+                df_wl_trend = df_wl_trend.interpolate(method ='linear', limit_direction ='forward') 
+                # Calulate slope
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+                # Restore NaN
+                slope_values[nan_mask] = np.nan
+                # Get Trend Flags
+                df_trend = slope_values.apply(np.vectorize(self._get_flags))
+            else:
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+            
             return df_trend 
         else:
             return pd.DataFrame()
@@ -54,6 +67,9 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         """
         product specific pre formating to convert API response to valid
         data arrays.
+        :param data: raw water level data received from IWLS API call (json)
+        :return: processed water level data (dict)
+
         """
         # Convert JSON data to Pandas tables
         df_wlp = self._gen_data_table(data,'wlp')
@@ -109,6 +125,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _update_product_specific_general_metadata(self,h5_file):
         """
         Update product specific (S-104) general metadata.
+        :param h5_file: h5 file to update (hdf5)
         """
         # No Changes from Template
         pass
@@ -118,7 +135,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
         Update feature level metadata (WaterLevel)
 
         :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
         # commonPointRule = no changes from template
         # dataCodingFormat = no changes from template
@@ -138,7 +155,7 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
     def _create_groups(self,h5_file,data):
         """
         Create data groups for each station
-        :param h5_file: h5 file to update
+        :param h5_file: h5 file to update (hdf5)
         :param data: formatted data arrays generated from _format_data_arrays
         """
         no_of_instances = len(data['dataset_types'])
@@ -164,10 +181,10 @@ class S104GeneratorDCF8(provider_iwls.s100.S100GeneratorDCF8):
             time_record_interval = int((instance_wl.index[1] - instance_wl.index[0]).total_seconds())
             instance_group.attrs.create('timeRecordInterval', time_record_interval)
             # 7 Start Time
-            start_date_time = instance_wl.index[-0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+            start_date_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
             instance_group.attrs.create('dateTimeOfFirstRecord', start_date_time)
             # 8 End times
-            end_time = instance_wl.index[0].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
+            end_time = instance_wl.index[-1].strftime("%Y%m%dT%H%M%SZ").encode('UTF-8')
             instance_group.attrs.create('dateTimeOfLastRecord', end_time)
             # 9 num groups
             num_groups = instance_wl.shape[1]

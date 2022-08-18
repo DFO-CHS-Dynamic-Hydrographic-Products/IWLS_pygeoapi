@@ -1,6 +1,6 @@
 From cache: True
-Created: 2022-06-27 17:29:47.362040
-Expires: 2022-06-28 17:29:47.362024
+Created: 2022-08-11 18:31:54.311503
+Expires: 2022-08-12 18:31:54.311487
 components:
   parameters:
     f:
@@ -442,6 +442,7 @@ paths:
               inputs:
                 bbox: -123.28,49.07,-123.01,49.35
                 end_time: '2021-12-06T23:00:00Z'
+                layer: s104
                 start_time: '2021-12-06T00:00:00Z'
             schema:
               $ref: http://schemas.opengis.net/ogcapi/processes/part1/1.0/openapi/schemas/execute.yaml

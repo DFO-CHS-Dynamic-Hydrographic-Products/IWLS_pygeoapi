@@ -76,7 +76,7 @@ class IwlsApiConnector:
         """
         Return a json response from the IWLS API containing full metadata for a single station
         :param station_code: = five digit station identifier (string)
-        :cache_result: boolean, if true use requests_cache to cache results
+        :cache_result: boolean, if true use requests_cache to cache results (bool)
         :returns: Station Metadata (JSON)
         """
         station_id = self.id_from_station_code(station_code)
@@ -104,7 +104,7 @@ class IwlsApiConnector:
                             'wlf-spine' = SPINE Forcast
                             'wcs1' = Observed Surface Currents Speed
                             'wcd1' = Observed Surface Currents Direction
-        returns: series of pairs of time stamps and water level values
+        returns: series of pairs of time stamps and water level values (json)
 
         """
         series_data = pd.DataFrame()
@@ -131,11 +131,11 @@ class IwlsApiConnector:
         """
         Get water level timeseries (observations, predictions, forecasts) for a single station
         :param station_code: five digits station identifier (string)
-        :param  time_series_code: Code of the timeseries (wlo,wlp, wlf, all); all return (wlo,wlp,wlf) tuple for every timestamps
-        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
-        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
-        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents)
-        :returns: GeoJSON containing requested station metadata and available water level time series for specified time range
+        :param  time_series_code: Code of the timeseries (wlo,wlp, wlf, all); all return (wlo,wlp,wlf) tuple for every timestamps (string)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents) (string)
+        :returns: GeoJSON containing requested station metadata and available water level time series for specified time range (Json)
         """
         
         # Can only get 7 days of data per request, split data in multiple requests if needed 
@@ -221,13 +221,13 @@ class IwlsApiConnector:
         """
         Do a series of queries to the IWLS API and return data
         within provided time frame and bounding box
-        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
-        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
-        :param limit: Maximum number of station to query
-        :param time_limit: Maximum time that can be requested, in hours
-        :param startindex: starting index for query
-        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
+        :param limit: Maximum number of station to query (int)
+        :param time_limit: Maximum time that can be requested, in hours (float)
+        :param startindex: starting index for query (int)
+        :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents) (string)
         :returns: GeoJson Feature Collection
         """
         # use summary metadata info to find stations within request
