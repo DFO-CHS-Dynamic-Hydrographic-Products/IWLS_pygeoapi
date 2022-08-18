@@ -237,8 +237,10 @@ class IwlsApiConnector:
         # Only Query stations up  from start index to limit
         end_index = startindex + limit
         stations_list = stations_list[startindex:end_index]
-
-
+        
+        # If surface currents, filter out stations with only water level observations
+        if dtype =='wcs':
+            stations_list = stations_list[stations_list['timeSeries'].astype(str).str.contains('wcs1')]
 
         # Query stations and populate Geojson feature collection
         geojson = {}
