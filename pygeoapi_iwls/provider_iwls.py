@@ -36,7 +36,8 @@ class ProviderIwls(BaseProvider):
     def get(self, identifier, **kwargs):
         """
         Get Feature by id
-        :param identifier: feature id
+        :param identifier: feature id (int)
+        
         :returns: feature collection
         """
         result = None
@@ -60,16 +61,16 @@ class ProviderIwls(BaseProvider):
         
         """
         Query IWLS
-        :param startindex: starting record to return (default 0)
-        :param limit: number of records to return (default 10)
+        :param startindex: starting record to return (default 0) (int)
+        :param limit: number of records to return (default 10) (int)
         :param resulttype: return results or hit limit (default results)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
-        :param datetime_: temporal (datestamp or extent)
-        :param properties: list of tuples (name, value)
-        :param sortby: list of dicts (property, order)
-        :param select_properties: list of property names
-        :param skip_geometry: bool of whether to skip geometry (default False)
-        :param q: full-text search term(s)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list) 
+        :param datetime_: temporal (datestamp or extent) (string)
+        :param properties: list of tuples (name, value) (list)
+        :param sortby: list of dicts (property, order) (list)
+        :param select_properties: list of property names (list)
+        :param skip_geometry: bool of whether to skip geometry (default False) (bool)
+        :param q: full-text search term(s) (string)
 
         :returns: dict of 0..n GeoJSON features
         """
@@ -105,10 +106,10 @@ class ProviderIwlsWaterLevels(ProviderIwls):
     def _provider_get_station_data(self,identifier,start_time,end_time,api):
         """        
         Used by Get Method
-        :param identifier: station ID
-        :param start_time: Start time (ISO 8601)
-        :param end_time: End time (ISO 8601)
-        :param api: api connection to IWLS
+        :param identifier: station ID (int)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param api: api connection to IWLS (IwlsApiConnector)
         
         :returns: GeoJSON feature
         """
@@ -118,12 +119,12 @@ class ProviderIwlsWaterLevels(ProviderIwls):
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex,api):
         """        
         Used by Query Method
-        :param start_time: Start time (ISO 8601)
-        :param end_time: End time (ISO 8601)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
-        :param limit: number of records to return (default 10)
-        :param startindex: starting record to return (default 0)
-        :param api: api connection to IWLS
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
+        :param limit: number of records to return (default 10) (int)
+        :param startindex: starting record to return (default 0) (int)
+        :param api: api connection to IWLS (IwlsApiConnector)
 
         :returns: dict of 0..n GeoJSON features
         """
@@ -142,12 +143,12 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_station_data(self,identifier,start_time,end_time,api):
         """
         Used by Get Method
-        :param identifier: station ID
-        :param start_time: Start time (ISO 8601)
-        :param end_time: End time (ISO 8601)
-        :param api: api connection to IWLS
+        :param identifier: station ID (int)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param api: api connection to IWLS (IwlsApiConnector)
 
-        :returns: GeoJSON feature
+        :returns: GeoJSON feature (json)
         """
 
         station_data = api.get_station_data(identifier,start_time,end_time, dtype='wcs')
@@ -156,14 +157,14 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex,api):
         """
         Used by Query Method
-        :start_time: Start time (ISO 8601)
-        :end_time: End time (ISO 8601)
-        :param bbox: bounding box [minx,miny,maxx,maxy]
-        :param limit: number of records to return (default 10)
-        :param startindex: starting record to return (default 0)
-        :param api: api connection to IWLS
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (list)
+        :param limit: number of records to return (default 10) (int)
+        :param startindex: starting record to return (default 0) (int)
+        :param api: api connection to IWLS (IwlsApiConnector)
 
-        :returns: dict of 0..n GeoJSON features
+        :returns: dict of 0..n GeoJSON features (json)
         """
         timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex, dtype='wcs')
         return timeseries

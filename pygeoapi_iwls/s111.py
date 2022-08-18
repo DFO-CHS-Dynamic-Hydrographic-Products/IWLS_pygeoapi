@@ -34,6 +34,8 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         """
         product specific pre formating to convert API response to valid
         data arrays. Must be implemented by child class
+        :param data: raw current level data received from IWLS API call (json)
+        :return: processed current level data (dict)
         """
         # Convert JSON data to Pandas tables
         wcs = self._gen_data_table(data,'wcs')
@@ -58,7 +60,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update product specific (S-111) general metadata.
-        :param h5_file: h5 file to update
+        :param h5_file: h5 file to update (hdf5)
         """
         # Surface Current Depth, No change from template
         # ToDo: surfaceCurrentDepth is proposed for S111 1.1.1,
@@ -74,8 +76,8 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         """
         Update feature level metadata (SurfaceCurrent)
 
-        :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param h5_file: h5 file to update (hdf5)
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
         # commonPointRule, No change from template
         # dataCodingFormat, No change from template
@@ -101,8 +103,8 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         """
         Create data groups for each station
 
-        :param h5_file: h5 file to update
-        :param data: formatted data arrays generated from _format_data_arrays
+        :param h5_file: h5 file to update (hdf5)
+        :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
 
         ### Update Instance Instance Group Metadata ###

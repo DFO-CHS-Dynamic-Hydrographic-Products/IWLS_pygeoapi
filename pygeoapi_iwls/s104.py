@@ -37,7 +37,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
-        param x: slope value calculated with a 1 hour rolling window
+        param x: slope value calculated with a 1 hour rolling window (float)
         return: trend flag (int)
         """
         if np.isnan(x):
@@ -55,15 +55,30 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Generate water level trend flags from water level values
-        :param df_wl: pandas dataframe containing water level values
-        :return: pandas Dataframe containing trend Flags for respective water level values
+        :param df_wl: pandas dataframe containing water level values (pandas.core.DataFrame)
+        :return: pandas Dataframe containing trend Flags for respective water level values (pandas.core.DataFrame)
         """
         if not df_wl.empty:
             df_wl_trend = df_wl
             interval = (df_wl_trend.index[1] - df_wl_trend.index[0]).total_seconds()
             timestamps_per_hour = int(3600 // interval)
-            slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(0,timestamps_per_hour),x)[0])
+
+            #Interpolate gaps for trend calculation if NaNs are in dataset
+            if df_wl_trend.isna().values.any():
+                # Create mask for NaN values
+                nan_mask = df_wl_trend.isna()
+                # Interpolate gaps
+                df_wl_trend = df_wl_trend.interpolate(method ='linear', limit_direction ='forward')
+                # Calulate slope
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+                # Restore NaN
+                slope_values[nan_mask] = np.nan
+                # Get Trend Flags
+            else:
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+
             df_trend = slope_values.apply(np.vectorize(self._get_flags))
+
             return df_trend
         else:
             return pd.DataFrame()
@@ -75,6 +90,9 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         """
         product specific pre formating to convert API response to valid
         data arrays.
+        :param data: raw water level data received from IWLS API call (json)
+        :return: processed water level data (dict)
+
         """
         # Convert JSON data to Pandas tables
         df_wlp = self._gen_data_table(data,'wlp')
@@ -145,6 +163,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update feature level metadata (WaterLevel)
+
         :param h5_file: h5 file to update (h5py._hl.files.File)
         :param data: formatted data arrays generated from _format_data_arrays (dict)
         """
@@ -168,6 +187,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Create data groups for each station
+
         :param h5_file: h5 file to update (h5py._hl.files.File)
         :param data: formatted data arrays generated from _format_data_arrays (dict)
         """

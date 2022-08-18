@@ -112,8 +112,7 @@ class S100Processor(BaseProcessor):
         """
         Execution Method
         :param data: User Input, format defined in PROCESS_METADATA
-        :PROCESS_METADATA: process description
-        :returns: MimeType: 'application/zip', zip archive of S-100 files
+        :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
         try:
 
