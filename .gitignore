@@ -1,0 +1,16 @@
+# directories made to run pygeoapi
+logs
+http_cache
+s100_process
+
+# output files
+s111_test.json
+test.json
+s104.zip
+*.h5
+
+# compile wheel directories
+install
+
+# misc
+.DS_Store
