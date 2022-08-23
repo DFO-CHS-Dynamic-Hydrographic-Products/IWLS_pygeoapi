@@ -73,10 +73,10 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
                 slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
                 # Restore NaN
                 slope_values[nan_mask] = np.nan
-                # Get Trend Flags
             else:
                 slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
 
+            # Get Trend Flags
             df_trend = slope_values.apply(np.vectorize(self._get_flags))
 
             return df_trend
@@ -243,3 +243,4 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )
+
