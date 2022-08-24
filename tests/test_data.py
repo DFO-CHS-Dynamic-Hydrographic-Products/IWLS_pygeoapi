@@ -11,7 +11,7 @@ s104_attr_names = {
                 }
 s111_attr_names = {
      '/': ['depthTypeIndex', 'eastBoundLongitude', 'epoch', 'geographicIdentifier', 'horizontalCRS', 'horizontalDatumReference', 'issueDate', 'issueTime', 'metadata', 'northBoundLatitude', 'productSpecification', 'southBoundLatitude', 'surfaceCurrentDepth', 'westBoundLongitude'],
-    'SurfaceCurrent': ['commonPointRule', 'dataCodingFormat', 'dimension', 'horizontalPositionUncertainty', 'maxDatasetCurrentSpeed', 'minDatasetCurrentSpeed', 'numInstance', 'numInstances', 'typeOfCurrentData', 'verticalPositionUncertainty'],
-    'SurfaceCurrent/SurfaceCurrent.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfTimes', 'timeRecordInterval'],
-    'SurfaceCurrent/SurfaceCurrent.01/Group_': ['endDateTime', 'numberOfTimes', 'startDateTime', 'stationIdentification', 'stationName', 'timeIntervalIndex', 'timeRecordInterval']
+    'SurfaceCurrent': ['commonPointRule', 'dataCodingFormat', 'dimension', 'horizontalPositionUncertainty', 'maxDatasetCurrentSpeed', 'minDatasetCurrentSpeed', 'numInstances', 'typeOfCurrentData', 'verticalPositionUncertainty'],
+    'SurfaceCurrent/SurfaceCurrent.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfTimes', 'timeRecordInterval', 'numberOfStations'],
+    'SurfaceCurrent/SurfaceCurrent.01/Group_001': ['endDateTime', 'numberOfTimes', 'startDateTime', 'stationIdentification', 'stationName', 'timeIntervalIndex', 'timeRecordInterval']
  }

@@ -18,3 +18,4 @@ config.yml
 # misc
 .DS_Store
 __pycache__
+tests/test_script.py
