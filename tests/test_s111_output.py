@@ -27,14 +27,14 @@ def h5_file():
         print(f'Error processing request: {response.status_code}')
 
 def test_horizontal_datum_ref(h5_file):
-    assert f111.attrs['horizontalDatumReference'] == 'ESPG'
+    assert h5_file.attrs['horizontalDatumReference'] == 'EPSG'
 
 def test_issue_date(h5_file):
     date_today = datetime.today().strftime('%Y%m%d')
-    assert f111.attrs['issueDate'] == date_today
+    assert h5_file.attrs['issueDate'] == date_today
 
 def test_surface_curr_depth(h5_file):
-    assert f111.attrs['surfaceCurrentDepth'] == 1.0
+    assert h5_file.attrs['surfaceCurrentDepth'] == 1.0
 
 def test_metadata(h5_file):
     assert h5_file.attrs['metadata'] == "MD_111CA0024900N12400W.XML"
@@ -61,3 +61,9 @@ def test_dcf8_attrs_exist(h5_file):
     # Parse test data attribute names from test data script
     attr_names_dict = test_data.s111_attr_names
     test_util.test_dcf8_attrs_exist(h5_file, product_name, attr_names_dict, product_attr_name, s104=False)
+
+def test_min_max_dataset_values(h5_file):
+    max_speed = h5_file[product_name].attrs['maxDatasetCurrentSpeed']
+    min_speed = h5_file[product_name].attrs['minDatasetCurrentSpeed']
+
+    test_util.run_test_min_max(h5_file, max_speed, min_speed, product_name)

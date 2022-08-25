@@ -28,14 +28,14 @@ def h5_file():
         print(f'Error processing request: {response.status_code}')
 
 def test_epoch(h5_file):
-    assert h5_file.attrs['epoch'] == '2005.0'
+    f104.attrs['epoch'] == 2005.0
 
 def test_horizontal_datum_ref(h5_file):
-    assert h5_file.attrs['horizontalDatumReference'] == 'EPSG'
+    assert f111.attrs['horizontalDatumReference'] == 'ESPG'
 
 def test_issue_date(h5_file):
     date_today = datetime.today().strftime('%Y%m%d')
-    assert h5_file.attrs['issueDate'] == date_today
+    assert f111.attrs['issueDate'] == date_today
 
 def test_metadata(h5_file):
     assert h5_file.attrs['metadata'] == "MD_104CA0024900N12400W.XML"
@@ -68,11 +68,16 @@ def test_dcf8_attrs_exist(h5_file):
 
 def test_min_max_dataset_values(h5_file):
 
+    abs_max, abs_min = None, None
+
+    num_instances = int(h5_file[product_name].attrs['numInstances'])
+
     # Get min/max from h5_file to test
     max_height = h5_file[product_name].attrs['maxDatasetHeight']
     min_height = h5_file[product_name].attrs['minDatasetHeight']
 
-    test_util.run_test_min_max(h5_file, max_height, min_height, product_name)
+    run_test_min_max(h5_file, max_height, min_height, product_name)
+
 
 def test_enums(h5_file):
     pass
