@@ -116,7 +116,7 @@ class S100Processor(BaseProcessor):
         """
         try:
 
-            print("Processsing request")
+            logging.info("Processsing request")
 
             t_start = timer()
             # Make folder to process request
@@ -160,8 +160,8 @@ class S100Processor(BaseProcessor):
             bbox =  [float(x) for x in bbox_string.split(',')]
 
             t_end = timer()
-            print(t_end - t_start)
-            print("Sending Request to IWLS")
+            logging.info(t_end - t_start)
+            logging.info("Sending Request to IWLS")
             t_start = timer()
             # Send Request to IWLS API and return geojson
              # Establish connection to IWLS API
@@ -178,22 +178,22 @@ class S100Processor(BaseProcessor):
                 json.dump(result, f, ensure_ascii=False, indent=4)
 
             t_end = timer()
-            print(t_end - t_start)
+            logging.info(t_end - t_start)
             t_start = timer()
             # Create S-100 Files from Geojson return
             s100_folder = os.path.join(folder_path, 's100')
             os.mkdir(s100_folder)
             if layer == 'S104':
-                print('Creating S-104 Files')
+                logging.info('Creating S-104 Files')
                 s104.S104GeneratorDCF8(response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5').create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
             else:
-                print('Creating S-111 Files')
+                logging.info('Creating S-111 Files')
                 s111.S111GeneratorDCF8(response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5').create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
             t_end = timer()
-            print(t_end - t_start)
-            print('Creating Archive and Returning Result')
+            logging.info(t_end - t_start)
+            logging.info('Creating Archive and Returning Result')
             t_start = timer()
             # Create Zip File containing S-104
 
@@ -212,14 +212,14 @@ class S100Processor(BaseProcessor):
 
 
             t_end = timer()
-            print(t_end - t_start)
+            logging.info(t_end - t_start)
 
-            print("Completed Process")
+            logging.info("Completed Process")
 
             return 'application/zip', value
 
         except Exception as e:
-            print(f'Error: {e}\nExiting process. See log file for more details.')
+            logging.info(f'Error: {e}\nExiting process. See log file for more details.')
             logging.error(e, exc_info=True)
 
     def __repr__(self):
