@@ -67,3 +67,13 @@ def test_min_max_dataset_values(h5_file):
     min_speed = h5_file[product_name].attrs['minDatasetCurrentSpeed']
 
     test_util.run_test_min_max(h5_file, max_speed, min_speed, product_name)
+
+def test_positioning_group(h5_file):
+    test_util.test_positioning_group(h5_file, product_name)
+
+def test_datetime_first_last_record(h5_file):
+    test_util.test_datetime_first_last_record(h5_file, product_name)
+
+def test_group_f_data(h5_file):
+    group_f_data = test_data.s111_group_f
+    test_util.test_group_f_dataset(h5_file, group_f_data)

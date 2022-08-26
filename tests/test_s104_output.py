@@ -61,10 +61,22 @@ def test_wl_trend_threshold(h5_file):
 def test_product_spec(h5_file):
     assert h5_file.attrs["productSpecification"] == "INT.IHO.S-104.0.0"
 
+def test_meth_wl_product(h5_file):
+    assert h5_file['WaterLevel'].attrs['methodWaterLevelProduct'] == 'Timeseries generated from official published water levels, predictions and forecast for Canadian waters requested using the IWLS API'
+
+def test_pick_priority_type(h5_file):
+    h5_file['WaterLevel'].attrs['pickPriorityType'] == '1,2,5'
+
 def test_dcf8_attrs_exist(h5_file):
     # Parse test data attribute names from test data script
     attr_names_dict = test_data.s104_attr_names
     test_util.test_dcf8_attrs_exist(h5_file, product_name, attr_names_dict, product_attr_name, s104=True)
+
+def test_common_point_rule(h5_file):
+    h5_file['WaterLevel'].attrs['commonPointRule'] == 4
+
+def test_datetime_first_last_record(h5_file):
+    test_util.test_datetime_first_last_record(h5_file, product_name)
 
 def test_min_max_dataset_values(h5_file):
 
@@ -74,5 +86,18 @@ def test_min_max_dataset_values(h5_file):
 
     test_util.run_test_min_max(h5_file, max_height, min_height, product_name)
 
-def test_enums(h5_file):
-    pass
+def test_num_stations(h5_file):
+    test_util.test_num_stations(h5_file, product_name)
+
+def test_positioning_group(h5_file):
+    test_util.test_positioning_group(h5_file, product_name)
+
+def test_feature_attribute(h5_file):
+    # move to test_util when bug fix pushed through
+    print(list(h5_file['Group_F/featureCode']))
+    print(product_name)
+    assert h5_file['Group_F/featureCode'][0].decode('utf-8') == product_name
+
+def test_group_f_data(h5_file):
+    group_f_data = test_data.s104_group_f
+    test_util.test_group_f_dataset(h5_file, group_f_data)

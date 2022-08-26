@@ -30,8 +30,8 @@ def check_time_interval_index_attr(time_interval_index, h5_file_attr_names, prod
             f"{product_type}Time attribute must exist if timeRecordInterval attribute is 0"
 
 def check_attrs(h5_file, h5_file_attr_names, test_data_attr_names, path, product_type):
-    # Iterate through attribute names
 
+    # Iterate through attribute names
     for attr_name in test_data_attr_names:
         # Ensure that the attribute exists in the h5 file
         assert attr_name in h5_file_attr_names, f"{attr_name} does not exist in {path}"
@@ -46,7 +46,6 @@ def test_dcf8_attrs_exist(h5_file, product_name, test_attr_dict, product_attr_na
     for path, test_data_attr_names in test_attr_dict.items():
         # Append 001, 002 ... nnn to Group_ prefix depending on Number of Stations
         if ('Group_' in path) and (s104 is True):
-            print("here")
             num_stations_path = f'{product_name}/{product_name}.01'
             num_stations = int(h5_file[num_stations_path].attrs['numberOfStations'])
 
@@ -107,3 +106,44 @@ def run_test_min_max(h5_file, h5_file_max, h5_file_min, product_name):
     # Test min/max values from h5_file vs test implementation
     assert round(abs_min,2) == round(h5_file_min, 2), f"MinDatasetHeight is {min_height} but testing found a value of {abs_min}"
     assert round(abs_max,2) == round(h5_file_max, 2), f"MaxDatasetHeight is {max_height}, but testing found a value of {abs_max}"
+
+def test_datetime_first_last_record(h5_file, product_name):
+    first_record = h5_file[f'{product_name}/{product_name}.01'].attrs['dateTimeOfFirstRecord']
+    last_record = h5_file[f'{product_name}/{product_name}.01'].attrs['dateTimeOfLastRecord']
+
+    h5_last_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['endDateTime']
+    h5_first_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['startDateTime']
+
+    assert first_record == h5_first_record, "first datetime record must be equal to first datetime in datasets"
+    assert last_record == h5_last_record, "last datetime record must be equal to last datetime in datasets"
+
+def test_num_stations(h5_file, product_name):
+    num_instances = int(h5_file[product_name].attrs['numInstances'])
+
+    # Get max/min values from dataset
+    for j in range(1, num_instances+1):
+        group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
+        num_stations = int(h5_file[group_path].attrs['numberOfStations'])
+
+        # Iterate through stations
+        for i in range(1,num_stations+1):
+            station_no = f"{group_path}/Group_{str(i).zfill(3)}"
+
+            assert station_no in h5_file, f"{station_no} does not exist in h5_file"
+
+def test_positioning_group(h5_file, product_name):
+    num_instances = int(h5_file[product_name].attrs['numInstances'])
+
+    # Get max/min values from dataset
+    for j in range(1, num_instances+1):
+        group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
+
+        assert f"{group_path}/Positioning" in h5_file, f"Positioning group not present in {group_path}"
+
+def test_group_f_dataset(h5_file, group_f_data):
+    # iterate through group_f product name items
+    for path, test_group_f_data in group_f_data.items():
+        for i, tuple_fields in enumerate(h5_file[path]):
+            decoded_fields = [field.decode("utf-8").strip() for field in tuple_fields]
+
+            assert decoded_fields == test_group_f_data[i], f"Fields for {path} in h5_file must be the same as test data"
