@@ -1,6 +1,3 @@
-From cache: True
-Created: 2022-08-18 18:50:30.023440
-Expires: 2022-08-19 18:50:30.023402
 components:
   parameters:
     f:
@@ -479,4 +476,3 @@ tags:
   name: iwls_surfacecurrent
 - description: Generate archive of S100 files from IWLS Geojson response
   name: s100
-

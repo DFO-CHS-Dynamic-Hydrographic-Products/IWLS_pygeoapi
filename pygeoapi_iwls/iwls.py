@@ -3,6 +3,8 @@ import requests
 import json
 import datetime
 import os
+import logging
+
 # Packages imports
 import pandas as pd
 import dateutil.parser
@@ -34,9 +36,9 @@ class IwlsApiConnector:
         params = {}
         r = s_summary_info.get(url=url, params=params)
 
-        print(f'From cache: {r.from_cache}')
-        print(f'Created: {r.created_at}')
-        print(f'Expires: {r.expires}')
+        logging.info(f'From cache: {r.from_cache}')
+        logging.info(f'Created: {r.created_at}')
+        logging.info(f'Expires: {r.expires}')
 
         r.raise_for_status()
         data_json = r.json()
@@ -237,7 +239,7 @@ class IwlsApiConnector:
         # Only Query stations up  from start index to limit
         end_index = startindex + limit
         stations_list = stations_list[startindex:end_index]
-        
+
         # If surface currents, filter out stations with only water level observations
         if dtype =='wcs':
             stations_list = stations_list[stations_list['timeSeries'].astype(str).str.contains('wcs1')]
