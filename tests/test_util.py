@@ -1,5 +1,6 @@
 import json, requests
 import numpy as np
+import test_data
 
 def run_request(request_type):
 
@@ -144,6 +145,53 @@ def test_group_f_dataset(h5_file, group_f_data):
     # iterate through group_f product name items
     for path, test_group_f_data in group_f_data.items():
         for i, tuple_fields in enumerate(h5_file[path]):
-            decoded_fields = [field.decode("utf-8").strip() for field in tuple_fields]
+            check_decoded_fields(tuple_fields, test_group_f_data[i])
 
-            assert decoded_fields == test_group_f_data[i], f"Fields for {path} in h5_file must be the same as test data"
+
+def check_decoded_fields(h5_tuple_fields, test_data_fields):
+
+        decoded_fields = [field.decode("utf-8").strip() for field in h5_tuple_fields]
+
+        assert decoded_fields == test_data_fields, f"Fields for {path} in h5_file must be the same as test data"
+
+def test_dataset_types(h5_file, product_name):
+    dataset_types_dict = test_data.dataset_types
+    field1_metadata, field2_metadata = get_dataset_types(h5_file, product_name)
+
+    field1_name, field1_type = field1_metadata
+    field2_name, field2_type = field2_metadata
+
+    # Iterate through groups
+    for j in range(1, h5_file[product_name].attrs['numInstances']+1):
+        group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
+
+        # bug fix for not having number of stations
+        if 'numberOfStations' in list(h5_file[group_path].attrs):
+            num_stations = int(h5_file[group_path].attrs['numberOfStations'])
+        else:
+            num_stations = 1
+
+        # Iterate through stations
+        for i in range(1,num_stations+1):
+
+            dataset_path = f"{group_path}/Group_{str(i).zfill(3)}/values"
+            # get dataset types in h5 file
+            dataset = h5_file[dataset_path]
+
+            # check dataset type is correct
+            assert issubclass(dataset.dtype[field1_name].type, field1_type), f"Specified dataset type is not the same as group F attribute, dataset type is {dataset.dtype[field1_name]} and group f type is {field1_type}"
+            assert issubclass(dataset.dtype[field2_name].type, field2_type), f"Specified dataset type is not the same as group F attribute, dataset type is {dataset.dtype[field2_name]} and group f type is {field2_type}"
+
+            # check dataset values are of correct type
+            assert dataset[0][0].dtype == dataset.dtype[field1_name].type, f"Dataset values must of same type as specified in group_f attributes. Group_F attribute type is {field1_type} and the current type is {dataset[0][0].dtype}"
+            assert dataset[0][1].dtype == dataset.dtype[field2_name].type, f"Dataset values must of same type as specified in group_f attributes. Group_F attribute type is {field2_type} and the current type is {dataset[0][1].dtype}"
+
+def get_dataset_types(h5_file, product_name):
+    dataset_types_dict = test_data.dataset_types
+#    dataset_types_dict = {'H5T_FLOAT': float, 'H5T_ENUM': int, 'H5T_STRING': str}
+    group_f_data = h5_file[f'Group_F/{product_name}']
+
+    field1_metadata = group_f_data[0][0].decode('utf-8'), dataset_types_dict[group_f_data[0][4].decode('utf-8')]
+    field2_metadata = group_f_data[1][0].decode('utf-8'), dataset_types_dict[group_f_data[1][4].decode('utf-8')]
+
+    return field1_metadata, field2_metadata

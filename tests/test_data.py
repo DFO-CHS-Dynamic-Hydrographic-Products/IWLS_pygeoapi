@@ -1,4 +1,4 @@
-
+import numpy as np
 
 s104_attr_names = {
     '/': ['eastBoundLongitude', 'epoch', 'geographicIdentifier', 'horizontalCRS', 'horizontalDatumReference', 'issueDate', 'issueTime', 'metadata', 'northBoundLatitude', 'productSpecification', 'southBoundLatitude', 'verticalCS', 'verticalCoordinateBase', 'verticalDatum', 'verticalDatumReference', 'waterLevelTrendThreshold', 'westBoundLongitude'],
@@ -29,3 +29,5 @@ s111_group_f = {'Group_F/SurfaceCurrent': [['surfaceCurrentSpeed', 'Surface curr
  ['surfaceCurrentDirection', 'Surface current direction', 'arc-degrees', '-1.0', 'H5T_FLOAT', '0.0', '360', 'geLtInterval'],
  ['surfaceCurrentTime', 'Surface current time', 'DateTime', '', 'H5T_STRING', '19000101T000000Z', '21500101T000000Z', 'closedInterval']]
  }
+
+dataset_types = {'H5T_FLOAT': float, 'H5T_ENUM': np.integer}

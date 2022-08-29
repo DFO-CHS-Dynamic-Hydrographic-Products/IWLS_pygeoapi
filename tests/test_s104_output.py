@@ -94,10 +94,11 @@ def test_positioning_group(h5_file):
 
 def test_feature_attribute(h5_file):
     # move to test_util when bug fix pushed through
-    print(list(h5_file['Group_F/featureCode']))
-    print(product_name)
     assert h5_file['Group_F/featureCode'][0].decode('utf-8') == product_name
 
 def test_group_f_data(h5_file):
     group_f_data = test_data.s104_group_f
     test_util.test_group_f_dataset(h5_file, group_f_data)
+
+def test_dataset_types(h5_file):
+    test_util.test_dataset_types(h5_file, product_name)

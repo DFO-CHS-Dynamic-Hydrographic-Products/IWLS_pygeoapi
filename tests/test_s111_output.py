@@ -77,3 +77,6 @@ def test_datetime_first_last_record(h5_file):
 def test_group_f_data(h5_file):
     group_f_data = test_data.s111_group_f
     test_util.test_group_f_dataset(h5_file, group_f_data)
+
+def test_dataset_types(h5_file):
+    test_util.test_dataset_types(h5_file, product_name)
