@@ -3,6 +3,8 @@ import requests
 import json
 import datetime
 import os
+import logging
+
 # Packages imports
 import pandas as pd
 import dateutil.parser
@@ -25,7 +27,7 @@ class IwlsApiConnector:
 
         :returns: Pandas dataframe containing summary information for all stations
         """
-        
+
         # Set up requests_cache session
         s_summary_info = requests_cache.CachedSession('http_cache', backend='filesystem',expire_after=86400)
 
@@ -34,10 +36,10 @@ class IwlsApiConnector:
         params = {}
         r = s_summary_info.get(url=url, params=params)
 
-        print(f'From cache: {r.from_cache}')
-        print(f'Created: {r.created_at}')
-        print(f'Expires: {r.expires}')
- 
+        logging.info(f'From cache: {r.from_cache}')
+        logging.info(f'Created: {r.created_at}')
+        logging.info(f'Expires: {r.expires}')
+
         r.raise_for_status()
         data_json = r.json()
         df = pd.DataFrame.from_dict(data_json)
@@ -53,7 +55,7 @@ class IwlsApiConnector:
         """
         iwls_id = self.info.loc[self.info.code==station_code].id.values[0]
         return iwls_id
-    
+
     def id_from_station_name(self, station_name):
         """
         Return unique id for a station from exact official name
@@ -90,11 +92,11 @@ class IwlsApiConnector:
             r = requests.get(url=url, params=params)
         r.raise_for_status()
         metadata_json = r.json()
-        return metadata_json 
+        return metadata_json
 
     def _get_timeseries(self,url,time_ranges_strings,series_code):
         """
-        Send a series of queries to the IWLS API and return 
+        Send a series of queries to the IWLS API and return
         :param url: url used for queries (String)
         :param time_ranges_string: pairs of start times and end times used for queries (pandas Dataframe)
         :param series_code: three letter identifer for time series (String)
@@ -116,7 +118,7 @@ class IwlsApiConnector:
                 }
             r = requests.get(url=url, params=params)
             r.raise_for_status()
-            series_data = series_data.append(pd.DataFrame.from_dict(r.json()))
+            series_data = pd.concat([series_data, pd.DataFrame.from_dict(r.json())])
 
         if series_data.empty:
                 return json.dumps({'value':{}})
@@ -137,8 +139,8 @@ class IwlsApiConnector:
         :param dtype: Type of data to query, ('wl' for water levels, 'wcs' for surface currents) (string)
         :returns: GeoJSON containing requested station metadata and available water level time series for specified time range (Json)
         """
-        
-        # Can only get 7 days of data per request, split data in multiple requests if needed 
+
+        # Can only get 7 days of data per request, split data in multiple requests if needed
         #(ToDo: had check to block large requests in ProviderIwls class)
         start_time_dt = dateutil.parser.parse(start_time)
         end_time_dt = dateutil.parser.parse(end_time)
@@ -213,7 +215,7 @@ class IwlsApiConnector:
 
         # Raise Error if  invalid data type
         else:
-            raise ValueError('Invalid data type. Accepted values are "wl" for water levels and "wcs" for surface currents')       
+            raise ValueError('Invalid data type. Accepted values are "wl" for water levels and "wcs" for surface currents')
 
         return station_geojson
 
@@ -237,7 +239,7 @@ class IwlsApiConnector:
         # Only Query stations up  from start index to limit
         end_index = startindex + limit
         stations_list = stations_list[startindex:end_index]
-        
+
         # If surface currents, filter out stations with only water level observations
         if dtype =='wcs':
             stations_list = stations_list[stations_list['timeSeries'].astype(str).str.contains('wcs1')]
@@ -254,7 +256,7 @@ class IwlsApiConnector:
                 feature = self.get_station_data(stn[1],start_time,end_time)
                 features.append(feature)
             geojson ['features'] = features
-        
+
         elif dtype == 'wcs':
             for stn in stations_list.code.iteritems():
                 feature = self.get_station_data(stn[1],start_time,end_time,'wcs')
@@ -263,11 +265,11 @@ class IwlsApiConnector:
 
         else:
             raise ValueError('Invalid data type. Accepted values are "wl" for water levels and "wcs" for surface currents ')
-        
-        
+
+
         with open('test.json', 'w', encoding='utf-8') as f:
             json.dump(geojson, f, ensure_ascii=False, indent=4)
-        
+
         return geojson
 
 api = IwlsApiConnector()

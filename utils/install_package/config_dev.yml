@@ -1,3 +1,4 @@
+
 # =================================================================
 #
 # Authors: Maxime Carre <maxime.carre@dfo-mpo.gc.ca>
@@ -18,7 +19,7 @@ server:
   map:  # leaflet map setup for HTML pages
     url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-  ogc_schemas_location: http://schemas.opengis.net 
+  ogc_schemas_location: http://schemas.opengis.net
 
 logging:
   level: ERROR
@@ -45,7 +46,7 @@ metadata:
         name: XXX XXX
         position: XXX XXX
         address: XXX XXX
-        city: XXX XXX 
+        city: XXX XXX
         stateorprovince: XXX XXX
         postalcode: XXX XXX
         country: XXX XXX
@@ -134,7 +135,7 @@ resources:
               title_field: id # optional field of which property to display as title/label on HTML pages
               format:  # optional default format
                   name: GeoJSON  # required: format name
-                  mimetype: application/json  # required: format mimetype    
+                  mimetype: application/json  # required: format mimetype
     s100:
         type: process
         processor:
