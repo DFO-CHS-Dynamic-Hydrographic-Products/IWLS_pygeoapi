@@ -44,6 +44,7 @@ def check_attrs(h5_file, h5_file_attr_names, test_data_attr_names, path, product
 
 def test_dcf8_attrs_exist(h5_file, product_name, test_attr_dict, product_attr_name, s104=True):
 
+    # Iterate through test data hardcoded attributes in dict {path: [attributes...]}
     for path, test_data_attr_names in test_attr_dict.items():
         # Append 001, 002 ... nnn to Group_ prefix depending on Number of Stations
         if ('Group_' in path) and (s104 is True):
@@ -79,7 +80,7 @@ def run_test_min_max(h5_file, h5_file_max, h5_file_min, product_name):
     abs_max, abs_min = None, None
     num_instances = int(h5_file[product_name].attrs['numInstances'])
 
-    # Get max/min values from dataset
+    # Iterate through number of instances
     for j in range(1, num_instances+1):
         group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
 
@@ -94,11 +95,13 @@ def run_test_min_max(h5_file, h5_file_max, h5_file_min, product_name):
             path = f"{group_path}/Group_{str(i).zfill(3)}/values"
             data = [np.nan if i[0]==-9999.0 else i[0] for i in list(h5_file[path])]
             max, min = np.nanmax(data), np.nanmin(data)
+            # set min max values in first iteration
             if abs_max is None:
                 abs_max = max
             if abs_min is None:
                 abs_min = min
 
+            # check if current max is greater or less than previous absolute max
             if max > abs_max:
                 abs_max = max
             if min < abs_min:
@@ -109,19 +112,22 @@ def run_test_min_max(h5_file, h5_file_max, h5_file_min, product_name):
     assert round(abs_max,2) == round(h5_file_max, 2), f"MaxDatasetHeight is {max_height}, but testing found a value of {abs_max}"
 
 def test_datetime_first_last_record(h5_file, product_name):
+    # get first/last record attribute
     first_record = h5_file[f'{product_name}/{product_name}.01'].attrs['dateTimeOfFirstRecord']
     last_record = h5_file[f'{product_name}/{product_name}.01'].attrs['dateTimeOfLastRecord']
 
-    h5_last_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['endDateTime']
-    h5_first_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['startDateTime']
+    # last/first record of dataset
+    dataset_last_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['endDateTime']
+    dataset_first_record = h5_file[f'{product_name}/{product_name}.01/Group_001'].attrs['startDateTime']
 
-    assert first_record == h5_first_record, "first datetime record must be equal to first datetime in datasets"
-    assert last_record == h5_last_record, "last datetime record must be equal to last datetime in datasets"
+    # ensure that first record matches dataset first record and vice versa for last record
+    assert first_record == dataset_first_record, "first datetime record must be equal to first datetime in datasets"
+    assert last_record == dataset_last_record, "last datetime record must be equal to last datetime in datasets"
 
 def test_num_stations(h5_file, product_name):
     num_instances = int(h5_file[product_name].attrs['numInstances'])
 
-    # Get max/min values from dataset
+    # Iterate through num instances
     for j in range(1, num_instances+1):
         group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
         num_stations = int(h5_file[group_path].attrs['numberOfStations'])
@@ -130,15 +136,15 @@ def test_num_stations(h5_file, product_name):
         for i in range(1,num_stations+1):
             station_no = f"{group_path}/Group_{str(i).zfill(3)}"
 
+            # assert that all stations exist
             assert station_no in h5_file, f"{station_no} does not exist in h5_file"
 
 def test_positioning_group(h5_file, product_name):
     num_instances = int(h5_file[product_name].attrs['numInstances'])
 
-    # Get max/min values from dataset
+    # Iterte through instances to find Positioning group
     for j in range(1, num_instances+1):
         group_path = f'{product_name}/{product_name}.{str(j).zfill(2)}'
-
         assert f"{group_path}/Positioning" in h5_file, f"Positioning group not present in {group_path}"
 
 def test_group_f_dataset(h5_file, group_f_data):
@@ -147,12 +153,11 @@ def test_group_f_dataset(h5_file, group_f_data):
         for i, tuple_fields in enumerate(h5_file[path]):
             check_decoded_fields(tuple_fields, test_group_f_data[i])
 
-
 def check_decoded_fields(h5_tuple_fields, test_data_fields):
+    # bug fix: decode - can remove decode
+    decoded_fields = [field.decode("utf-8").strip() for field in h5_tuple_fields]
 
-        decoded_fields = [field.decode("utf-8").strip() for field in h5_tuple_fields]
-
-        assert decoded_fields == test_data_fields, f"Fields for {path} in h5_file must be the same as test data"
+    assert decoded_fields == test_data_fields, f"Fields for {path} in h5_file must be the same as test data"
 
 def test_dataset_types(h5_file, product_name):
     dataset_types_dict = test_data.dataset_types
@@ -187,10 +192,12 @@ def test_dataset_types(h5_file, product_name):
             assert dataset[0][1].dtype == dataset.dtype[field2_name].type, f"Dataset values must of same type as specified in group_f attributes. Group_F attribute type is {field2_type} and the current type is {dataset[0][1].dtype}"
 
 def get_dataset_types(h5_file, product_name):
+    # Extract dataset names and types from group f
     dataset_types_dict = test_data.dataset_types
-#    dataset_types_dict = {'H5T_FLOAT': float, 'H5T_ENUM': int, 'H5T_STRING': str}
     group_f_data = h5_file[f'Group_F/{product_name}']
 
+    # extract dataset name and type from group_f/{waterlevel or surfacecurrent} list and decode from utf-8
+    # bug fix - to remove decode
     field1_metadata = group_f_data[0][0].decode('utf-8'), dataset_types_dict[group_f_data[0][4].decode('utf-8')]
     field2_metadata = group_f_data[1][0].decode('utf-8'), dataset_types_dict[group_f_data[1][4].decode('utf-8')]
 

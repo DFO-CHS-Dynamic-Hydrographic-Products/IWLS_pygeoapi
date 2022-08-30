@@ -62,7 +62,7 @@ def test_product_spec(h5_file):
     assert h5_file.attrs["productSpecification"] == "INT.IHO.S-104.0.0"
 
 def test_meth_wl_product(h5_file):
-    assert h5_file['WaterLevel'].attrs['methodWaterLevelProduct'] == 'Timeseries generated from official published water levels, predictions and forecast for Canadian waters requested using the IWLS API'
+    assert h5_file[product_name].attrs['methodWaterLevelProduct'] == 'Timeseries generated from official published water levels, predictions and forecast for Canadian waters requested using the IWLS API'
 
 def test_pick_priority_type(h5_file):
     h5_file['WaterLevel'].attrs['pickPriorityType'] == '1,2,5'
@@ -102,3 +102,6 @@ def test_group_f_data(h5_file):
 
 def test_dataset_types(h5_file):
     test_util.test_dataset_types(h5_file, product_name)
+
+def test_axis_names(h5_file):
+    assert 'axisNames' in h5_file[product_name], "axisNames does not exist in {product_name} group"

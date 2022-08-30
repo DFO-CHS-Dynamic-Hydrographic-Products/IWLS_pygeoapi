@@ -58,8 +58,8 @@ def test_product_spec(h5_file):
     assert h5_file.attrs["productSpecification"] == "INT.IHO.S-111.1.0"
 
 def test_dcf8_attrs_exist(h5_file):
-    # Parse test data attribute names from test data script
     attr_names_dict = test_data.s111_attr_names
+
     test_util.test_dcf8_attrs_exist(h5_file, product_name, attr_names_dict, product_attr_name, s104=False)
 
 def test_min_max_dataset_values(h5_file):
@@ -80,3 +80,7 @@ def test_group_f_data(h5_file):
 
 def test_dataset_types(h5_file):
     test_util.test_dataset_types(h5_file, product_name)
+
+# bug fix
+# def test_axis_names(h5_file):
+#     assert 'axisNames' in h5_file[product_name], "axisNames does not exist in {product_name} group"
