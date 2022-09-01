@@ -33,9 +33,12 @@ def check_time_interval_index_attr(time_interval_index, h5_file_attr_names, prod
 def check_attrs(h5_file, h5_file_attr_names, test_data_attr_names, path, product_type):
 
     # Iterate through attribute names
-    for attr_name in test_data_attr_names:
+    for attr_name, attr_type in test_data_attr_names:
         # Ensure that the attribute exists in the h5 file
         assert attr_name in h5_file_attr_names, f"{attr_name} does not exist in {path}"
+
+        # Check that the attribute type is correct
+        assert issubclass(type(h5_file[path].attrs[attr_name]), attr_type), "Attribute name: {attr_name} and value is {h5_file[path].attrs[attr_name]} incorrect type. Type should be: {attr_type} but is {type(h5_file[path].attrs[attr_name])}"
 
         # Check a specific case where dcf8 timeIntervalIndex is 0 or 1
         if attr_name == 'timeIntervalIndex':
@@ -65,13 +68,11 @@ def test_dcf8_attrs_exist(h5_file, product_name, test_attr_dict, product_attr_na
             # Get the names of the attributes in group (from the h5_file)
             h5_file_attr_names = list(h5_file[path].attrs)
 
-            ### requires bug fix for s104/S111
-            # assert len(h5_file_attr_names) == len(test_data_attr_names), (
-            #     f'H5 file attributes for path: {path} must be the same length as the test data attributes\n'
-            #     f'H5 file attributes are: {h5_file_attr_names} \n'
-            #     f'Test data attributes are: {test_data_attr_names}'
-            # )
-
+            assert len(h5_file_attr_names) == len(test_data_attr_names), (
+                f'H5 file attributes for path: {path} must be the same length as the test data attributes\n'
+                f'H5 file attributes are: {h5_file_attr_names} \n'
+                f'Test data attributes are: {test_data_attr_names}'
+            )
 
             # Ensure that the attributes are present in the h5 file
             check_attrs(h5_file, h5_file_attr_names, test_data_attr_names, path, product_attr_name)
@@ -151,13 +152,7 @@ def test_group_f_dataset(h5_file, group_f_data):
     # iterate through group_f product name items
     for path, test_group_f_data in group_f_data.items():
         for i, tuple_fields in enumerate(h5_file[path]):
-            check_decoded_fields(tuple_fields, test_group_f_data[i])
-
-def check_decoded_fields(h5_tuple_fields, test_data_fields):
-    # bug fix: decode - can remove decode
-    decoded_fields = [field.decode("utf-8").strip() for field in h5_tuple_fields]
-
-    assert decoded_fields == test_data_fields, f"Fields for {path} in h5_file must be the same as test data"
+            assert tuple_fields == test_data_fields, f"Fields for {path} in h5_file must be the same as test data"
 
 def test_dataset_types(h5_file, product_name):
     dataset_types_dict = test_data.dataset_types

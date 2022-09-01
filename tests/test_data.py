@@ -1,23 +1,22 @@
 import numpy as np
 
 s104_attr_names = {
-    '/': ['eastBoundLongitude', 'epoch', 'geographicIdentifier', 'horizontalCRS', 'horizontalDatumReference', 'issueDate', 'issueTime', 'metadata', 'northBoundLatitude', 'productSpecification', 'southBoundLatitude', 'verticalCS', 'verticalCoordinateBase', 'verticalDatum', 'verticalDatumReference', 'waterLevelTrendThreshold', 'westBoundLongitude'],
+    '/': [('verticalCS', np.integer), ('verticalCoordinateBase',np.integer), ('verticalDatum', np.integer), ('verticalDatumReference', np.integer), ('waterLevelTrendThreshold', float), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('westBoundLongitude', float)],
 
-    'WaterLevel': ['commonPointRule', 'dataCodingFormat', 'dimension', 'horizontalPositionUncertainty', 'maxDatasetHeight', 'methodWaterLevelProduct', 'minDatasetHeight', 'numInstances', 'pickPriorityType', 'timeUncertainty', 'verticalUncertainty'],
-
+    'WaterLevel': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('numInstances', np.integer), ('maxDatasetHeight', float), ('methodWaterLevelProduct', str), ('minDatasetHeight', float), ('pickPriorityType', str), ('timeUncertainty', float)],
     'WaterLevel/WaterLevel.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfStations', 'numberOfTimes'],
 
-    'WaterLevel/WaterLevel.01/Group_': ['endDateTime', 'numberOfTimes', 'startDateTime', 'stationIdentification', 'stationName', 'timeIntervalIndex', 'timeRecordInterval']
+    'WaterLevel/WaterLevel.01/Group_': [('endDateTime', str), ('numberOfTimes', np.integer), ('startDateTime', str), ('stationIdentification', str), ('stationName', str), ('timeIntervalIndex', np.integer), ('timeRecordInterval', np.integer)]
                 }
 
 s111_attr_names = {
-     '/': ['depthTypeIndex', 'eastBoundLongitude', 'epoch', 'geographicIdentifier', 'horizontalCRS', 'horizontalDatumReference', 'issueDate', 'issueTime', 'metadata', 'northBoundLatitude', 'productSpecification', 'southBoundLatitude', 'surfaceCurrentDepth', 'westBoundLongitude'],
+     '/': [('depthTypeIndex', np.integer), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('surfaceCurrentDepth', float), ('westBoundLongitude', float)],
 
-    'SurfaceCurrent': ['commonPointRule', 'dataCodingFormat', 'dimension', 'horizontalPositionUncertainty', 'maxDatasetCurrentSpeed', 'minDatasetCurrentSpeed', 'numInstances', 'typeOfCurrentData', 'verticalPositionUncertainty'],
+    'SurfaceCurrent': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('maxDatasetCurrentSpeed', float), ('minDatasetCurrentSpeed', float), ('numInstances', np.integer), ('typeOfCurrentData', np.integer), ('verticalPositionUncertainty', float)],
 
-    'SurfaceCurrent/SurfaceCurrent.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfTimes', 'timeRecordInterval'], # numberOfStations
+    'SurfaceCurrent/SurfaceCurrent.01': [('dateTimeOfFirstRecord', str), ('dateTimeOfLastRecord', str), ('numGRP', np.integer), ('numberOfTimes', np.integer), ('timeRecordInterval', np.integer)], # bug fix - numberOfStations
 
-    'SurfaceCurrent/SurfaceCurrent.01/Group_001': ['endDateTime', 'numberOfTimes', 'startDateTime', 'stationIdentification', 'stationName', 'timeIntervalIndex', 'timeRecordInterval']
+    'SurfaceCurrent/SurfaceCurrent.01/Group_001': [('endDateTime', str), ('numberOfTimes', np.integer), ('startDateTime', str), ('stationIdentification', str), ('stationName', str), ('timeIntervalIndex', np.integer), ('timeRecordInterval', np.integer)]
  }
 
 s104_group_f = {'Group_F/WaterLevel': [['waterLevelHeight', 'Water level height', 'meters', '-9999', 'H5T_FLOAT', '-99.99', '99.99', 'closedInterval'],
