@@ -74,10 +74,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
                 slope_values[nan_mask] = np.nan
             else:
                 slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
-<<<<<<< HEAD
-=======
 
->>>>>>> main
             # Get Trend Flags
             df_trend = slope_values.apply(np.vectorize(self._get_flags))
 
@@ -122,10 +119,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
         wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf, 'spine':df_spine}
 
-<<<<<<< HEAD
-
-=======
->>>>>>> main
         # Create Positions Dict
         df_wlp_position = self._gen_positions(df_wlp)
         df_wlo_position = self._gen_positions(df_wlo)
@@ -149,15 +142,11 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
         return  data_arrays
 
-<<<<<<< HEAD
 
-    def _update_product_specific_general_metadata(self,h5_file):
-=======
     def _update_product_specific_general_metadata(
             self,
             h5_file: h5py._hl.files.File
     ):
->>>>>>> main
         """
         Update product specific (S-104) general metadata.
 
@@ -188,9 +177,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
 
-<<<<<<< HEAD
-    def _create_groups(self,h5_file,data):
-=======
         metadata_attrs = {'minDatasetHeight': data['min'], 'maxDatasetHeight': data['max'], 'numInstances': len(data['dataset_types'])}
         super()._update_feature_metadata(h5_file, data, metadata_attrs)
 
@@ -199,7 +185,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             h5_file: h5py._hl.files.File,
             data: dict
     ):
->>>>>>> main
         """
         Create data groups for each station
 
@@ -255,17 +240,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_attributes(h5_file, instance_wl_group, datasets, group_counter=i+1)
 
             ### Create Positioning Group ###
-<<<<<<< HEAD
-            positioning_path = instance_group_path + '/Positioning'
-            positioning = h5_file.create_group(positioning_path)
-            lat = instance_position['lat']
-            lon = instance_position['lon']
-            lat_lon = list(zip(lat, lon))
-            geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
-            geometry_values = positioning.create_dataset('geometryValues',data=lat_lon,dtype=geometry_values_type)
-=======
+
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )
-
->>>>>>> main
