@@ -12,9 +12,6 @@ s104.zip
 # compile wheel directories
 install
 
-# modified during compile
-config.yml
-
 # misc
 .DS_Store
 __pycache__
