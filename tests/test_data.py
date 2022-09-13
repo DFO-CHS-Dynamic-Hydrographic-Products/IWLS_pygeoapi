@@ -1,7 +1,7 @@
 import numpy as np
 
 s104_attr_names = {
-    '/': [('verticalCS', np.integer), ('verticalCoordinateBase',np.integer), ('verticalDatum', np.integer), ('verticalDatumReference', np.integer), ('waterLevelTrendThreshold', float), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('westBoundLongitude', float)],
+    '/': [('verticalCS', np.integer), ('verticalCoordinateBase',np.integer), ('verticalDatum', np.integer), ('verticalDatumReference', str), ('waterLevelTrendThreshold', float), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('westBoundLongitude', float)],
 
     'WaterLevel': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('numInstances', np.integer), ('maxDatasetHeight', float), ('methodWaterLevelProduct', str), ('minDatasetHeight', float), ('pickPriorityType', str), ('timeUncertainty', float)],
     'WaterLevel/WaterLevel.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfStations', 'numberOfTimes'],

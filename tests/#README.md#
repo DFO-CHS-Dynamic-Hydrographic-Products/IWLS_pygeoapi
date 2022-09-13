@@ -1,0 +1,10 @@
+# Instructions to run tests
+
+## Requirements
+* Installed version of pytest
+* Configured setup of env variables and installed newest wheelt to run `pygeoapi serve`
+
+## How to run tests
+1. Setup server, run `pygeoapi serve`
+2. pytest test_s104_output.py
+3. pytest test_s111_output.py
