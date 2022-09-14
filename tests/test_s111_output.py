@@ -74,16 +74,15 @@ def test_positioning_group(h5_file):
 def test_datetime_first_last_record(h5_file):
     test_util.test_datetime_first_last_record(h5_file, product_name)
 
-def test_group_f_data(h5_file):
-    group_f_data = test_data.s111_group_f
-    test_util.test_group_f_dataset(h5_file, group_f_data)
+# def test_group_f_data(h5_file):
+#     group_f_data = test_data.s111_group_f
+#     test_util.test_group_f_dataset(h5_file, group_f_data)
 
-def test_dataset_types(h5_file):
-    test_util.test_dataset_types(h5_file, product_name)
+# def test_dataset_types(h5_file):
+#     test_util.test_dataset_types(h5_file, product_name)
 
 def test_axis_names(h5_file):
     assert 'axisNames' in h5_file[product_name], "axisNames does not exist in {product_name} group"
 
 def test_feature_attribute(h5_file):
-    # move to test_util when bug fix pushed through
-    assert h5_file['Group_F/featureCode'][0] == product_name
+    test_util.test_feature_attribute(h5_file, product_name)

@@ -65,7 +65,7 @@ def test_meth_wl_product(h5_file):
     assert h5_file[product_name].attrs['methodWaterLevelProduct'] == 'Timeseries generated from official published water levels, predictions and forecast for Canadian waters requested using the IWLS API'
 
 def test_pick_priority_type(h5_file):
-    h5_file['WaterLevel'].attrs['pickPriorityType'] == '1,2,5'
+    h5_file[product_name].attrs['pickPriorityType'] == '1,2,5'
 
 def test_dcf8_attrs_exist(h5_file):
     # Parse test data attribute names from test data script
@@ -93,8 +93,7 @@ def test_positioning_group(h5_file):
     test_util.test_positioning_group(h5_file, product_name)
 
 def test_feature_attribute(h5_file):
-    # move to test_util when bug fix pushed through
-    assert h5_file['Group_F/featureCode'][0].decode('utf-8') == product_name
+    test_util.test_feature_attribute(h5_file, product_name)
 
 def test_group_f_data(h5_file):
     group_f_data = test_data.s104_group_f

@@ -1,16 +1,17 @@
 import numpy as np
 
 s104_attr_names = {
-    '/': [('verticalCS', np.integer), ('verticalCoordinateBase',np.integer), ('verticalDatum', np.integer), ('verticalDatumReference', str), ('waterLevelTrendThreshold', float), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('westBoundLongitude', float)],
+    '/': [('verticalCS', np.integer), ('verticalCoordinateBase',np.integer), ('verticalDatum', np.integer), ('verticalDatumReference', np.integer), ('waterLevelTrendThreshold', float), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('westBoundLongitude', float)],
 
-    'WaterLevel': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('numInstances', np.integer), ('maxDatasetHeight', float), ('methodWaterLevelProduct', str), ('minDatasetHeight', float), ('pickPriorityType', str), ('timeUncertainty', float)],
-    'WaterLevel/WaterLevel.01': ['dateTimeOfFirstRecord', 'dateTimeOfLastRecord', 'numGRP', 'numberOfStations', 'numberOfTimes'],
+    'WaterLevel': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('numInstances', np.integer), ('maxDatasetHeight', float), ('methodWaterLevelProduct', str), ('minDatasetHeight', float), ('pickPriorityType', str), ('timeUncertainty', float), ('verticalUncertainty', float)],
+
+    'WaterLevel/WaterLevel.01': [('dateTimeOfFirstRecord', str), ('dateTimeOfLastRecord', str), ('numGRP', np.integer), ('numberOfStations', np.integer), ('numberOfTimes', np.integer), ('timeRecordInterval', np.integer), ('typeOfWaterLevelData', np.integer), ('verticalDatumReference', np.integer)],
 
     'WaterLevel/WaterLevel.01/Group_': [('endDateTime', str), ('numberOfTimes', np.integer), ('startDateTime', str), ('stationIdentification', str), ('stationName', str), ('timeIntervalIndex', np.integer), ('timeRecordInterval', np.integer)]
                 }
 
 s111_attr_names = {
-     '/': [('depthTypeIndex', np.integer), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('surfaceCurrentDepth', float), ('westBoundLongitude', float)],
+     '/': [('depthTypeIndex', np.integer), ('eastBoundLongitude', float), ('epoch', str), ('geographicIdentifier', str), ('horizontalCRS', np.integer), ('horizontalDatumReference', str), ('issueDate', str), ('issueTime',str), ('metadata', str), ('northBoundLatitude', float), ('productSpecification', str), ('southBoundLatitude', float), ('surfaceCurrentDepth', float), ('westBoundLongitude', float), ('verticalDatumReference', np.integer)],
 
     'SurfaceCurrent': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('maxDatasetCurrentSpeed', float), ('minDatasetCurrentSpeed', float), ('numInstances', np.integer), ('typeOfCurrentData', np.integer), ('verticalPositionUncertainty', float)],
 
@@ -30,3 +31,4 @@ s111_group_f = {'Group_F/SurfaceCurrent': [['surfaceCurrentSpeed', 'Surface curr
  }
 
 dataset_types = {'H5T_FLOAT': float, 'H5T_ENUM': np.integer}
+

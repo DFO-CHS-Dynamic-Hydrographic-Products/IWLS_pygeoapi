@@ -36,8 +36,6 @@ def check_attrs(h5_file, h5_file_attr_names, test_data_attr_names, path, product
     for attr_name, attr_type in test_data_attr_names:
         # Ensure that the attribute exists in the h5 file
         assert attr_name in h5_file_attr_names, f"{attr_name} does not exist in {path}"
-        print(attr_name)
-        print(attr_type)
 
         # Check that the attribute type is correct
         assert issubclass(type(h5_file[path].attrs[attr_name]), attr_type), "Attribute name: {attr_name} and value is {h5_file[path].attrs[attr_name]} incorrect type. Type should be: {attr_type} but is {type(h5_file[path].attrs[attr_name])}"
@@ -154,9 +152,9 @@ def test_group_f_dataset(h5_file, group_f_data):
     # iterate through group_f product name items
     for path, test_group_f_data in group_f_data.items():
         for i, tuple_fields in enumerate(h5_file[path]):
-            check_decoded_fields(tuple_fields, test_group_f_data[i])
+            check_decoded_fields(tuple_fields, test_group_f_data[i], path)
 
-def check_decoded_fields(h5_tuple_fields, test_data_fields):
+def check_decoded_fields(h5_tuple_fields, test_data_fields, path):
     # bug fix: decode - can remove decode
     decoded_fields = [field.decode("utf-8").strip() for field in h5_tuple_fields]
 
@@ -205,3 +203,6 @@ def get_dataset_types(h5_file, product_name):
     field2_metadata = group_f_data[1][0].decode('utf-8'), dataset_types_dict[group_f_data[1][4].decode('utf-8')]
 
     return field1_metadata, field2_metadata
+
+def test_feature_attribute(h5_file, product_name):
+    assert h5_file['Group_F/featureCode'][0].decode('utf-8') == product_name
