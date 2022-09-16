@@ -5,6 +5,7 @@ import h5py
 from scipy.stats import linregress
 
 # Import local files
+import S104Def
 from provider_iwls.s100 import S100GeneratorDCF8
 
 class S104GeneratorDCF8(S100GeneratorDCF8):
@@ -17,23 +18,19 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self,
             json_path: str,
             folder_path: str,
-            template_path: str
-    ):
+            template_path: str):
+
         # Call s100 base class with preconfigured S104 data
         super().__init__(json_path=json_path,
                          folder_path=folder_path,
                          template_path=template_path,
-                         dataset_names= ('waterLevelHeight', 'waterLevelTrend'),
-                         dataset_types= (np.float64, np.int8),
-                         product_id= 'WaterLevel',
-                         file_type= '104')
+                         class_def=S104Def)
 
 
     def _get_flags(
             self,
             x: float,
-            trend_treshold = 0.2
-    ):
+            trend_treshold = 0.2):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
@@ -51,8 +48,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
 
     def _gen_S104_trends(
             self,
-            df_wl: pd.core.frame.DataFrame
-    ):
+            df_wl: pd.core.frame.DataFrame):
         """
         Generate water level trend flags from water level values
         :param df_wl: pandas dataframe containing water level values (pandas.core.DataFrame)
@@ -70,23 +66,24 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
                 # Interpolate gaps
                 df_wl_trend = df_wl_trend.interpolate(method ='linear', limit_direction ='forward')
                 # Calulate slope
-                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(
+                    lambda x: linregress(range(timestamps_per_hour),x)[0])
                 # Restore NaN
                 slope_values[nan_mask] = np.nan
             else:
-                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(lambda x: linregress(range(timestamps_per_hour),x)[0])
+                slope_values = df_wl_trend.rolling(timestamps_per_hour, center = True).apply(
+                    lambda x: linregress(range(timestamps_per_hour),x)[0])
 
             # Get Trend Flags
             df_trend = slope_values.apply(np.vectorize(self._get_flags))
 
             return df_trend
-        else:
-            return pd.DataFrame()
+
+        return pd.DataFrame()
 
     def _format_data_arrays(
             self,
-            data: list
-    ):
+            data: list):
         """
         product specific pre formating to convert API response to valid
         data arrays.
@@ -109,8 +106,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         trend = {'wlp':df_wlp_trend,'wlo':df_wlo_trend,'wlf':df_wlf_trend,'spine':df_spine_trend}
 
         # Calculate min and max values for file
-        dataset_max = max([df_wlp.max().max(),df_wlf.max().max(),df_wlo.max().max(),df_spine.max().max()])
-        dataset_min = min([df_wlp.min().min(),df_wlf.min().min(),df_wlo.min().min(),df_spine.min().min()])
+        dataset_max = max([df_wlp.max().max(),df_wlf.max().max(), df_wlo.max().max(),df_spine.max().max()])
+        dataset_min = min([df_wlp.min().min(),df_wlf.min().min(), df_wlo.min().min(),df_spine.min().min()])
 
         # Replace NaN with fill value (-9999)
         df_wlp = df_wlp.fillna(-9999)
@@ -121,12 +118,11 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         wl = {'wlp':df_wlp,'wlo':df_wlo,'wlf':df_wlf, 'spine':df_spine}
 
         # Create Positions Dict
-        df_wlp_position = self._gen_positions(df_wlp)
-        df_wlo_position = self._gen_positions(df_wlo)
-        df_wlf_position = self._gen_positions(df_wlf)
-        df_spine_position = self._gen_positions(df_spine)
+        df_wlp_position, df_wlo_position = self._gen_positions(df_wlp), self._gen_positions(df_wlo)
+        df_wlf_position, df_spine_position = self._gen_positions(df_wlf), self._gen_positions(df_spine)
 
-        position = {'wlp':df_wlp_position,'wlo':df_wlo_position,'wlf':df_wlf_position,'spine':df_spine_position}
+        position = {'wlp':df_wlp_position,'wlo':df_wlo_position,
+            'wlf':df_wlf_position,'spine':df_spine_position}
 
          # List available data sets
         dataset_types = []
@@ -139,14 +135,14 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         if not df_spine.empty:
             dataset_types.append('spine')
 
-        data_arrays = {'wl':wl,'trend':trend,'position':position,'max':dataset_max,'min':dataset_min,'dataset_types':dataset_types}
+        data_arrays = {'wl':wl,'trend':trend,'position':position,
+                       'max':dataset_max,'min':dataset_min,'dataset_types':dataset_types}
 
         return  data_arrays
 
     def _update_product_specific_general_metadata(
             self,
-            h5_file: h5py._hl.files.File
-    ):
+            h5_file: h5py._hl.files.File):
         """
         Update product specific (S-104) general metadata.
 
@@ -159,8 +155,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self,
             h5_file: h5py._hl.files.File,
             data: dict,
-            metadata_attrs = None
-    ):
+            metadata_attrs = None):
         """
         Update feature level metadata (WaterLevel)
 
@@ -177,15 +172,17 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         # timeUncertainty = no changes from template (for now, -1.0 unassessed)
         # verticalUncertainty = no changes from template (for now, -1.0 unassessed)
 
-        metadata_attrs = {'minDatasetHeight': data['min'], 'maxDatasetHeight': data['max'], 'numInstances': len(data['dataset_types'])}
+        metadata_attrs = {'minDatasetHeight': data['min'],
+                          'maxDatasetHeight': data['max'],
+                          'numInstances': len(data['dataset_types'])}
+
         super()._update_feature_metadata(h5_file, data, metadata_attrs)
 
     def _create_groups(
             self,
             h5_file: h5py._hl.files.File,
-            data: dict
-    ):
-        """
+            data: dict):
+p        """
         Create data groups for each station
 
         :param h5_file: h5 file to update (h5py._hl.files.File)
@@ -204,7 +201,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             instance_group_path = f'{self.product_id}/{self.product_id}.0{i+1}'
 
             # Ensure that the group exists
-            assert not h5_file[self.product_id].__contains__(instance_group_path), f"Group: {instance_group_path} exists already, cannot recreate a group that already exists"
+            assert not h5_file[self.product_id].__contains__(instance_group_path), \
+                f"Group: {instance_group_path} exists already, cannot recreate a group that already exists"
 
             # Configure root group to attach datasets for each station
             instance_wl_group = h5_file.create_group(instance_group_path)
@@ -243,4 +241,3 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )
-

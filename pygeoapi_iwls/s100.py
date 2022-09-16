@@ -24,11 +24,7 @@ class S100GeneratorDCF8():
                  json_path: str,
                  folder_path: str,
                  template_path: str,
-                 dataset_names: tuple,
-                 dataset_types: tuple,
-                 product_id: str,
-                 file_type: str
-    ):
+                 class_def: object):
         """
 
         S100GeneratorDCF8 init method
@@ -39,22 +35,22 @@ class S100GeneratorDCF8():
         self.folder_path = Path(folder_path)
         self.json_path = Path(json_path)
         self.template_path = Path(template_path)
-        self.dataset_names = dataset_names
-        self.dataset_types = dataset_types
-        self.product_id = product_id
-        self.file_type = file_type
+        self.dataset_names = class_def.dataset_names
+        self.dataset_types = class_def.dataset_types
+        self.product_id = class_def.product_id
+        self.file_type = class_def.file_type
 
 
 
     def create_s100_tiles_from_template(self,
-                                        grid_path: str
-    ):
+                                        grid_path: str):
         """
         Create S-100 tiles from production template
         :param grid_path: path to geojson tile grid (string)
         """
 
-        assert self.json_path.exists(), "Json path does not exist: {json_path}".format(json_path=self.json_path)
+        assert self.json_path.exists(), \
+            "Json path does not exist: {json_path}".format(json_path=self.json_path)
 
         # Load Json and convert to python dict
         with open(self.json_path) as data_file:
@@ -78,7 +74,8 @@ class S100GeneratorDCF8():
             # Search for stations within cell boundaries
 
             for item in data:
-                if (cell_min_lat < item['properties']['metadata']['latitude'] < cell_max_lat) and (cell_min_lon < item['properties']['metadata']['longitude'] < cell_max_lon):
+                if ((cell_min_lat < item['properties']['metadata']['latitude'] < cell_max_lat)
+                    and (cell_min_lon < item['properties']['metadata']['longitude'] < cell_max_lon)):
                    cell_data_list.append(item)
 
             # Generate S100 file if data exist within cell
@@ -91,8 +88,7 @@ class S100GeneratorDCF8():
     def _create_s100_dcf8(self,
                           s100_data: dict,
                           filename: str,
-                          bbox: list
-    ):
+                          bbox: list):
         """
         Create single S-100  file from production template
 
@@ -117,8 +113,7 @@ class S100GeneratorDCF8():
 
     def _format_data_arrays(
             self,
-            data: list
-    ):
+            data: list):
         """
         product specific pre formating to convert API response to valid
         data arrays. Must be implemented by child class
@@ -128,8 +123,7 @@ class S100GeneratorDCF8():
     def _update_general_metadata(self,
                                  h5_file: h5py._hl.files.File,
                                  filename: str,
-                                 bbox: list
-    ):
+                                 bbox: list):
         """
         Update general metadata (file level)
         :param h5_file: h5 file to update (hdf5)
@@ -174,8 +168,7 @@ class S100GeneratorDCF8():
 
     def _gen_data_table(self,
                         s100_data: list,
-                        code: str
-    ):
+                        code: str):
         """
         Generate dataframe of water level information needed to produce S-100 files
 
@@ -188,7 +181,14 @@ class S100GeneratorDCF8():
         for i in  s100_data:
             if i['properties'][code]:
                 # [stn_id, stn_name, lat, long]
-                name = i['properties']['metadata']['code'] + '$' + i['properties']['metadata']['officialName'] + '$' + str(i['properties']['metadata']['latitude']) + '$' + str(i['properties']['metadata']['longitude'])
+                name = (i['properties']['metadata']['code']
+                        + '$'
+                        + i['properties']['metadata']['officialName']
+                        + '$'
+                        + str(i['properties']['metadata']['latitude'])
+                        + '$'
+                        + str(i['properties']['metadata']['longitude']))
+
                 stn_data = pd.Series(i['properties'][code], name=name)
                 stn_data.index = pd.to_datetime(stn_data.index)
                 data_list.append(stn_data)
@@ -200,8 +200,7 @@ class S100GeneratorDCF8():
 
     def _gen_positions(
             self,
-            df: pd.core.frame.DataFrame
-    ):
+            df: pd.core.frame.DataFrame):
         """
         Generate position for stations
         :param df: pandas data frame of water level or current information information (pandas.core.DataFrame)
@@ -216,8 +215,7 @@ class S100GeneratorDCF8():
 
     def _update_product_specific_general_metadata(
             self,
-            h5_file: h5py._hl.files.File
-    ):
+            h5_file: h5py._hl.files.File):
         """
         Update product specific general metadata.
         Must be implemented by child class
@@ -228,8 +226,7 @@ class S100GeneratorDCF8():
             self,
             h5_file: h5py._hl.files.File,
             data: dict,
-            attr_data: dict
-    ):
+            attr_data: dict):
         """
         Update feature level metadata
         Must be implemented by child class
@@ -243,8 +240,7 @@ class S100GeneratorDCF8():
 
     def _create_groups(self,
                        h5_file: h5py._hl.files.File,
-                       data: dict
-    ):
+                       data: dict):
         """
         Update feature level metadata
         Must be implemented by child class
@@ -255,9 +251,7 @@ class S100GeneratorDCF8():
                            h5_file: h5py._hl.files.File,
                            group: h5py._hl.group.Group,
                            datasets: tuple,
-                           group_counter=1
-
-    ):
+                           group_counter=1):
         """
         Create data attributes for each station
         :param group: Root group to assign values (h5py._hl.group.Group)
@@ -303,8 +297,7 @@ class S100GeneratorDCF8():
                                  h5_file: h5py._hl.files.File,
                                  instance_group_path: str,
                                  lat: float,
-                                 lon: float
-    ):
+                                 lon: float):
         '''
         Creates the positioning group and associated geometry values dataset of lat/lon values
 
