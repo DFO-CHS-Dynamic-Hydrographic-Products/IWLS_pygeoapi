@@ -8,6 +8,7 @@ import datetime
 import shutil
 import json
 import logging
+import json
 
 import provider_iwls.s104 as s104
 import provider_iwls.s111 as s111
@@ -16,85 +17,9 @@ from zipfile import ZipFile
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 from provider_iwls.iwls import IwlsApiConnector
 from timeit import default_timer as timer
-#: Process metadata and description
-PROCESS_METADATA = {
-    'version': '0.2.0',
-    'id': 's100',
-    'title': 'S100',
-    'description': 'Generate archive of S100 files from IWLS Geojson response',
-    'keywords': ['IWLS', 'Water Level', 'S104', 'S111'],
-    'links': [{
-        'type': 'text/html',
-        'rel': 'canonical',
-        'title': 'information',
-        'href': 'https://example.org/process',
-        'hreflang': 'en-US'
-    }],
-    'inputs': {
-            'layer': {
-            'title': 'S100 Layer',
-            'description': 'Layer to query, valid input: S104 or S111',
-            'schema': {
-                'type': 'string'
-            },
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'metadata': None,  # TODO how to use?
-            'keywords': ['S100']
-        },
-        'start_time': {
-            'title': 'Start Time',
-            'description': 'Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)',
-            'schema': {
-                'type': 'string'
-            },
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'metadata': None,  # TODO how to use?
-            'keywords': ['Datetime']
-        },
-        'end_time': {
-            'title': 'End Time',
-            'description': 'End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z)',
-            'schema': {
-                'type': 'string'
-            },
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'metadata': None,  # TODO how to use?
-            'keywords': ['Datetime']
-        },
-        'bbox': {
-            'title': 'Bounding Box',
-            'description': 'bounding box [minx,miny,maxx,maxy], Latitude and Longitude (WGS84)',
-            'schema': {
-                'type': 'string'
-            },
-            'minOccurs': 1,
-            'maxOccurs': 1,
-            'metadata': None,  # TODO how to use?
-            'keywords': ['Latitude', 'Longitude']
-        },
-    },
-    'outputs': {
-        'zip': {
-            'title': 'S100 Archive',
-            'description': 'Zip archive of S100 files',
-            'schema': {
-                'type': 'object',
-                'contentMediaType': 'application/zip'
-            }
-        }
-    },
-    'example': {
-        'inputs': {
-            'layer': 's104',
-            'start_time': '2021-12-06T00:00:00Z',
-            'end_time': '2021-12-06T23:00:00Z',
-            'bbox': '-123.28,49.07,-123.01,49.35',
-        }
-    }
-}
+
+#Process metadata and description
+PROCESS_METADATA = json.load('./templates/process_metadata.json')
 
 class S100Processor(BaseProcessor):
     """S-100 plugin process for pygeoAPI"""
