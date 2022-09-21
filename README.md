@@ -8,7 +8,7 @@ Currently include a pygeoapi data provider plugin to interface with the IWLS dat
 ## Coding Guidelines
 
 ### General Guidelines
-* Ensure that formatting complies with PEP8 guidlines https://peps.python.org/pep-0008/. Sample excerpt from the PEP8 guidelines:
+* Ensure that formatting complies with [PEP8 guidelines](https://peps.python.org/pep-0008/). Sample excerpt from the PEP8 guidelines site:
     ```
     # Aligned with opening delimiter.
     foo = long_function_name(var_one, var_two,
@@ -26,7 +26,7 @@ Currently include a pygeoapi data provider plugin to interface with the IWLS dat
         var_three, var_four)
     ```
 * Work should be adequately documented. Functions/methods should have docstrings describing their purpose and types in addition to inline comments with implementation details.
-* Use type hinting for parameter and return values. See the python typing library for more information. See an example below:
+* Use type hinting for parameter and return values. See the [python typing library](https://docs.python.org/3/library/typing.html) for more information. An example:
     ```
     def foo(test_str: str) -> int:
     '''
@@ -45,7 +45,7 @@ Currently include a pygeoapi data provider plugin to interface with the IWLS dat
 * Ensure commit messages are meaningful and describe the changes to the code base.
 * Function length should not exceed screen size (rule of thumb) i.e. generally they should be short and you should not have to scroll to get to the bottom. If that is the case, the function should be futher subdivided. See https://refactoring.guru/smells/long-method
 
-Some resources on code smells:
+Additional resources on code smells:
 * https://refactoring.guru/refactoring/smells
 
 ## Code Review Guidelines
