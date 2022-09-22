@@ -1,21 +1,18 @@
 
-import provider_iwls.s104
-import provider_iwls.s111
-import uuid
-import os
-import io
-import datetime
-import shutil
-import json
-import logging
+# Standard library imports
+import uuid, os, io, datetime, json, shutil, logging
 
+# Package imports
+from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
+from zipfile import ZipFile
+from timeit import default_timer as timer
+
+# Local imports
+from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
 import provider_iwls.s104 as s104
 import provider_iwls.s111 as s111
 
-from zipfile import ZipFile
-from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
-from provider_iwls.iwls import IwlsApiConnector
-from timeit import default_timer as timer
 #: Process metadata and description
 PROCESS_METADATA = {
     'version': '0.2.0',
@@ -101,16 +98,16 @@ class S100Processor(BaseProcessor):
 
     def __init__(self, processor_def):
         """
-        Initialize object
-        :param processor_def: provider definition
-        :returns: pygeoapi.process.S100Processor
-        """
+        Initialize S100 object.
 
+        :param processor_def: provider definition
+        """
         super().__init__(processor_def, PROCESS_METADATA)
 
-    def execute(self, data, folder_cleanup=True):
+    def execute(self, data: Dict[str: str], folder_cleanup=True):
         """
-        Execution Method
+        Execute request to IWLS and create S111/S104 file.
+
         :param data: User Input, format defined in PROCESS_METADATA
         :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
@@ -164,22 +161,25 @@ class S100Processor(BaseProcessor):
             logging.info("Sending Request to IWLS")
             t_start = timer()
             # Send Request to IWLS API and return geojson
-             # Establish connection to IWLS API
-            api = IwlsApiConnector()
+
             # Pass query to IWLS API
             if layer == 'S104':
-                result = api.get_timeseries_by_boundary(start_time,end_time,bbox)
+                # Establish connection to IWLS API
+                api = IwlsApiConnectorWaterLevels()
             else:
-                result = api.get_timeseries_by_boundary(start_time,end_time,bbox,dtype='wcs')
+                api = IwlsApiConnectorCurrents()
+
+            result = api.get_timeseries_by_boundary(start_time, end_time, bbox)
 
             # Write Json to Folder
             response_path = os.path.join(folder_path, 'output.json')
             with open(response_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
 
-            t_end = timer()
+            t_end = timepr()
             logging.info(t_end - t_start)
             t_start = timer()
+
             # Create S-100 Files from Geojson return
             s100_folder = os.path.join(folder_path, 's100')
             os.mkdir(s100_folder)

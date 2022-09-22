@@ -18,7 +18,7 @@ server:
   map:  # leaflet map setup for HTML pages
     url: https://tile.openstreetmap.org/{z}/{x}/{y}.png
     attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
-  ogc_schemas_location: http://schemas.opengis.net 
+  ogc_schemas_location: http://schemas.opengis.net
 
 logging:
   level: ERROR
@@ -45,7 +45,7 @@ metadata:
         name: XXX XXX
         position: XXX XXX
         address: XXX XXX
-        city: XXX XXX 
+        city: XXX XXX
         stateorprovince: XXX XXX
         postalcode: XXX XXX
         country: XXX XXX
@@ -88,7 +88,7 @@ resources:
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
               default: true  # optional: if not specified, the first provider definition is considered the default
-              name: provider_iwls.provider_iwls.ProviderIwlsWaterLevels
+              name: provider_iwls.iwls_api_connector_waterlevels.IwlsApiConnectorWaterLevels
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
@@ -128,13 +128,13 @@ resources:
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
               default: true  # optional: if not specified, the first provider definition is considered the default
-              name: provider_iwls.provider_iwls.ProviderIwlsCurrents
+              name: provider_iwls.iwls_api_connector_currents.IwlsApiConnectorCurrents
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
               format:  # optional default format
                   name: GeoJSON  # required: format name
-                  mimetype: application/json  # required: format mimetype    
+                  mimetype: application/json  # required: format mimetype
     s100:
         type: process
         processor:

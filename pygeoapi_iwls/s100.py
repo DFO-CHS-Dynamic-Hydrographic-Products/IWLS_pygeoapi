@@ -200,7 +200,7 @@ class S100GeneratorDCF8():
 
     def _gen_positions(
             self,
-            df: pd.core.frame.DataFrame):
+            df: pd.core.frame.DataFrame) -> dict:
         """
         Generate position for stations
         :param df: pandas data frame of water level or current information information (pandas.core.DataFrame)
