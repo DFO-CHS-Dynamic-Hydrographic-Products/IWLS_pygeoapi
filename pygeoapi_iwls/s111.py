@@ -4,7 +4,7 @@ import numpy as np
 
 # Import local files
 from provider_iwls.s100 import S100GeneratorDCF8
-import S111Def
+from provider_iwls.s111_def import S111Def
 
 class S111GeneratorDCF8(S100GeneratorDCF8):
     """

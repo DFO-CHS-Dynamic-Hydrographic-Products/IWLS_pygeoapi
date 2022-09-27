@@ -5,7 +5,7 @@ import h5py
 from scipy.stats import linregress
 
 # Import local files
-import S104Def
+from provider_iwls.s104_def import S104Def
 from provider_iwls.s100 import S100GeneratorDCF8
 
 class S104GeneratorDCF8(S100GeneratorDCF8):
@@ -182,7 +182,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self,
             h5_file: h5py._hl.files.File,
             data: dict):
-p        """
+        """
         Create data groups for each station
 
         :param h5_file: h5 file to update (h5py._hl.files.File)

@@ -1,23 +1,19 @@
 # Standard library imports
-import requests, json, datetime, os, uuid, logging
+import requests, json, datetime, os, uuid, logging, requests_cache, dateutil.parser
 
 # Packages imports
 from zipfile import ZipFile
 import pandas as pd
-import requests_cache
-import dateutil.parser
 
-from pygeoapi.provider.base import BaseProvider
-
-class IwlsApiConnector(BaseProvider):
+class IwlsApiConnector():
     """
     Provider abstract base class for iwls data
     Used as parent by ProviderIwlsWaterLevels and ProviderIwlsCurrents
     """
-    def __init__(self, provider_def):
-        self.info = self.get_summary_info()
+    def __init__(self):
+        self.info = self._get_summary_info()
 
-    def get_summary_info(self) -> pd.DataFrame:
+    def _get_summary_info(self) -> pd.DataFrame:
         """
         Get summary information for all stations.Runs on class instantiation.
         Output is used to match station codes and names to unique IWLS database id.
@@ -41,34 +37,34 @@ class IwlsApiConnector(BaseProvider):
 
         return pd.DataFrame.from_dict(data_json)
 
-    def id_from_station_code(self, station_code: str) -> int:
+    def _id_from_station_code(self, station_code: str) -> int:
         """
         Return unique id for a station from five digits identifier
+
         :param station_code: five digits station identifier (string)
         :returns: unique IWLS database id (int)
         """
-        iwls_id = self.info.loc[self.info.code==station_code].id.values[0]
-        return iwls_id
+        return self.info.loc[self.info.code==station_code].id.values[0]
 
-    def id_from_station_name(self, station_name: str) -> int:
+    def _id_from_station_name(self, station_name: str) -> int:
         """
         Return unique id for a station from exact official name
+
         :param sation_name: Station exact official name (string)
         :returns: unique IWLS database id (int)
         """
-        iwls_id = self.info.loc[self.info.officialName==station_name].id.values[0]
-        return iwls_id
+        return self.info.loc[self.info.officialName==station_name].id.values[0]
 
-    def station_name_from_id(self, iwls_id: str) -> str:
+    def _station_name_from_id(self, iwls_id: str) -> str:
         """
         Return  station  exact official name from unique id
-        :param iwls_id:unique IWLS database id (string)
-        :returns: Station Name (string)
-        """
-        station_name = self.info.loc[self.info.id==iwls_id].officialName.values[0]
-        return station_name
 
-    def get_station_metadata(self, station_code: str, cache_result=True):
+        :param iwls_id:unique IWLS database id (string)
+        :returns: Station Nname (string)
+        """
+        return self.info.loc[self.info.id==iwls_id].officialName.values[0]
+
+    def _get_station_metadata(self, station_code: str, cache_result=True):
         """
         Return a json response from the IWLS API containing full metadata for a single station.
 
@@ -76,7 +72,7 @@ class IwlsApiConnector(BaseProvider):
         :cache_result: boolean, if true use requests_cache to cache results (bool)
         :returns: Station Metadata (JSON)
         """
-        station_id = self.id_from_station_code(station_code)
+        station_id = self._id_from_station_code(station_code)
         url = 'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/' + station_id + '/metadata'
         params = {}
 
@@ -86,18 +82,18 @@ class IwlsApiConnector(BaseProvider):
         else:
             r = requests.get(url=url, params=params)
         r.raise_for_status()
-        metadata_json = r.json()
-        return metadata_json
 
-    def _get_station_data(self, station_id: int, start_time: str, end_time: str) -> dict:
+        return r.json()
+
+    def _get_station_data(self, station_code: int, start_time: str, end_time: str) -> dict:
         """
         Get the station data.
 
-        :param identifier: station ID (int)
+        :param station_code: five digits station identifier (string)
+        :param  time_series_code: Code of the timeseries (wlo,wlp, wlf, all); all return (wlo,wlp,wlf) tuple for every timestamps (string)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
-
-        :returns: GeoJSON feature
+        :returns: time_strings_range, metadata and url for query
         """
 
         # Can only get 7 days of data per request, split data in multiple requests if needed
@@ -122,56 +118,75 @@ class IwlsApiConnector(BaseProvider):
         #  Convert datetime object back to ISO 8601 format strings
         time_ranges_strings = [[datetime.datetime.strftime(i,'%Y-%m-%dT%H:%M:%SZ',) for i in x] for x in time_ranges]
 
-        # Execute all get requests
-
         # Get metadata
-        metadata = self.get_station_metadata(station_id)
+        metadata = self._get_station_metadata(station_code)
 
-        station_id = self.id_from_station_code(station_id)
+        # Get the station id from the station code
+        station_id = self._id_from_station_code(station_code)
+
+        # Use the station id in the url for the query
         url = f'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/{station_id}/data'
 
         return time_ranges_strings, metadata, url
 
-    def _get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list,
-                                             limit=10, start_index=0):
+    def _get_timeseries(self,url: str, time_ranges_strings: pd.DataFrame, series_code: str):
         """
-        Contains all logic common to WaterLevels/SurfaceCurrents IWLSConnector class
+        Send a series of queries to the IWLS API and return
+
+        :param url: url used for queries (String)
+        :param time_ranges_string: pairs of start times and end times used for queries (pandas Dataframe)
+        :param series_code: three letter identifer for time series (String)
+                            'wlo' = Observed Water Levels
+                            'wlp' = Tidal Predictions
+                            'wlf' = Quality Control Forecast
+                            'wlf-spine' = SPINE Forcast
+                            'wcs1' = Observed Surface Currents Speed
+                            'wcd1' = Observed Surface Currents Direction
+        returns: series of pairs of time stamps and water level values (json)
+        """
+        series_data = pd.DataFrame()
+        for i in time_ranges_strings:
+            params = {
+                'time-series-code':series_code,
+                'from':i[0],
+                'to': i[1]
+                }
+            r = requests.get(url=url, params=params)
+            r.raise_for_status()
+            series_data = pd.concat([series_data, pd.DataFrame.from_dict(r.json())])
+
+        if series_data.empty:
+                return json.dumps({'value':{}})
+        else:
+                series_data['eventDate'] = pd.to_datetime(series_data['eventDate'])
+                series_data = series_data.set_index('eventDate').sort_index()
+                series_data = series_data[['value']]
+
+                return series_data.to_json(date_format='iso')
+
+
+    def _get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list,
+                                    limit: int, start_index: int):
+        """
+        Contains all logic common to WaterLevels/SurfaceCurrents IWLSConnector class to retrieve timeseries data inside of a bounding box.
+
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param bbox: bounding box [minx,miny,maxx,maxy] (list)
         :param limit: number of records to return (default 10) (int)
         :param start_index: starting record to return (default 0) (int)
-
-        :returns: lat/lon values in bounding box, list of stations, end index and unpopulated geojson
+        :returns: lat/lon values in bounding box, list of stations, end index and unpopulated geojson (timeseries_data)
         """
         # use summary metadata info to find stations within request
         within_lat = self.info['latitude'].between(bbox[1], bbox[3])
         within_lon = self.info['longitude'].between(bbox[0], bbox[2])
 
         stations_list_data = self.info[within_lat & within_lon]
-        stations_list = stations_list_data[start_index:end_index]
 
         # Only Query stations up  from start index to limit
         end_index = start_index + limit
+        stations_list = stations_list_data[start_index:end_index]
 
         timeseries_data = {"type": "featureCollection"}
 
         return within_lat, within_lon, stations_list, end_index, timeseries_data
-
-    def get(self, station_id: int, **kwargs):
-        """
-        Get feature by id
-
-        :param identifier: feature id (int)
-        :returns: feature collection
-        """
-
-        # Only latest 24h of data available throught get method
-        now = datetime.datetime.now()
-        tomorrow = now + datetime.timedelta(days=1)
-        yesterday = now - datetime.timedelta(days=1)
-        end_time = tomorrow.strftime('%Y-%m-%dT%H:%M:%SZ')
-        start_time = yesterday.strftime('%Y-%m-%dT%H:%M:%SZ')
-
-        # Pass query to IWLS API and return result
-        return self._get_station_data(station_id, start_time, end_time)

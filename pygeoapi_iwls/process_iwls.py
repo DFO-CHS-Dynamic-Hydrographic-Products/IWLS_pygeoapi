@@ -12,6 +12,8 @@ from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLe
 from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
 import provider_iwls.s104 as s104
 import provider_iwls.s111 as s111
+from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
+from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
 
 #: Process metadata and description
 PROCESS_METADATA = {
@@ -104,7 +106,7 @@ class S100Processor(BaseProcessor):
         """
         super().__init__(processor_def, PROCESS_METADATA)
 
-    def execute(self, data: Dict[str: str], folder_cleanup=True):
+    def execute(self, data: dict, folder_cleanup=True):
         """
         Execute request to IWLS and create S111/S104 file.
 
@@ -169,14 +171,14 @@ class S100Processor(BaseProcessor):
             else:
                 api = IwlsApiConnectorCurrents()
 
-            result = api.get_timeseries_by_boundary(start_time, end_time, bbox)
+            result = api._get_timeseries_by_boundary(start_time, end_time, bbox)
 
             # Write Json to Folder
             response_path = os.path.join(folder_path, 'output.json')
             with open(response_path, 'w', encoding='utf-8') as f:
                 json.dump(result, f, ensure_ascii=False, indent=4)
 
-            t_end = timepr()
+            t_end = timer()
             logging.info(t_end - t_start)
             t_start = timer()
 
