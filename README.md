@@ -43,7 +43,7 @@ Currently include a pygeoapi data provider plugin to interface with the IWLS dat
     assert type(test_str) == str, f'test_str variable is of type {type(test_str)} but should be str'
     ```
 * Ensure commit messages are meaningful and describe the changes to the code base.
-* Function length should not exceed screen size (rule of thumb) i.e. generally they should be short and you should not have to scroll to get to the bottom. If that is the case, the function should be futher subdivided. See https://refactoring.guru/smells/long-method
+* Function length should not exceed screen size (rule of thumb) i.e. generally they should be short and you should not have to scroll to get to the bottom. If that is the case, the function should be further subdivided. See https://refactoring.guru/smells/long-method
 
 Additional resources on code smells:
 * https://refactoring.guru/refactoring/smells
@@ -53,10 +53,10 @@ Additional resources on code smells:
 ### Pull Request Lifecycle
 
 1. It is standard to create an associated issue and pull a branch from that issue. Checkout out a branch from updated main. Branch names should start with the issue number. For example issue 12 called 'bug_fixes' would be 12-bug-fixes.
-2. Implementat the issue using the above coding guidelines.
+2. Implementent the issue using the above coding guidelines.
 3. Prior to submitting a PR, you are required to test your code:
     * Code should compile
-    * Run the tests under the `/tests` directory for both S111 and S104 files using the example curl requst listed below. All tests must pass.
+    * Run the tests under the `/tests` directory for both S111 and S104 files using the example curl request listed below. All tests must pass.
 4. Merge your branch locally with Main to avoid Merge Conflicts
 5. Ensure your branch addresses all the features from the issue, follows style formatting guides (comments etc.) and is efficient.
 4. Submit your PR and list the changes in the comments area in addition to any other concerns/comments you have. Assign a reviewer.
