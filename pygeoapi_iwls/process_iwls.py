@@ -15,14 +15,8 @@ import provider_iwls.s111 as s111
 from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
 from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
 
-from zipfile import ZipFile
-from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
-from provider_iwls.iwls import IwlsApiConnector
-from timeit import default_timer as timer
-
 #Process metadata and description
-PROCESS_METADATA = json.load('./templates/process_metadata.json')
->>>>>>> main
+PROCESS_METADATA = json.load(open('./templates/process_metadata.json'))
 
 class S100Processor(BaseProcessor):
     """S-100 plugin process for pygeoAPI"""

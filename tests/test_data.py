@@ -5,7 +5,7 @@ s104_attr_names = {
 
     'WaterLevel': [('commonPointRule', np.integer), ('dataCodingFormat', np.integer), ('dimension', np.integer), ('horizontalPositionUncertainty', float), ('numInstances', np.integer), ('maxDatasetHeight', float), ('methodWaterLevelProduct', str), ('minDatasetHeight', float), ('pickPriorityType', str), ('timeUncertainty', float), ('verticalUncertainty', float)],
 
-    'WaterLevel/WaterLevel.01': [('dateTimeOfFirstRecord', str), ('dateTimeOfLastRecord', str), ('numGRP', np.integer), ('numberOfStations', np.integer), ('numberOfTimes', np.integer), ('timeRecordInterval', np.integer), ('typeOfWaterLevelData', np.integer), ('verticalDatumReference', np.integer)],
+    'WaterLevel/WaterLevel.01': [('dateTimeOfFirstRecord', str), ('dateTimeOfLastRecord', str), ('numGRP', np.integer), ('numberOfStations', np.integer), ('numberOfTimes', np.integer), ('timeRecordInterval', np.integer), ('typeOfWaterLevelData', np.integer)],
 
     'WaterLevel/WaterLevel.01/Group_': [('endDateTime', str), ('numberOfTimes', np.integer), ('startDateTime', str), ('stationIdentification', str), ('stationName', str), ('timeIntervalIndex', np.integer), ('timeRecordInterval', np.integer)]
                 }
@@ -31,4 +31,3 @@ s111_group_f = {'Group_F/SurfaceCurrent': [['surfaceCurrentSpeed', 'Surface curr
  }
 
 dataset_types = {'H5T_FLOAT': float, 'H5T_ENUM': np.integer}
-

@@ -88,7 +88,7 @@ resources:
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
               default: true  # optional: if not specified, the first provider definition is considered the default
-              name: provider_iwls.iwls_api_connector_waterlevels.IwlsApiConnectorWaterLevels
+              name: provider_iwls.provider_iwls.ProviderIwlsWaterLevels
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
@@ -128,7 +128,7 @@ resources:
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
               default: true  # optional: if not specified, the first provider definition is considered the default
-              name: provider_iwls.iwls_api_connector_currents.IwlsApiConnectorCurrents
+              name: provider_iwls.provider_iwls.ProviderIwlsCurrents
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
