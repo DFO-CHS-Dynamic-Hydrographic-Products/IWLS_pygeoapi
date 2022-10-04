@@ -12,8 +12,6 @@ from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLe
 from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
 import provider_iwls.s104 as s104
 import provider_iwls.s111 as s111
-from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
-from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
 
 #Process metadata and description
 PROCESS_METADATA = json.load(open('./templates/process_metadata.json'))

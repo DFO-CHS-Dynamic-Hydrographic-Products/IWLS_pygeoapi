@@ -13,7 +13,7 @@ class IwlsApiConnector():
     def __init__(self):
         self.info = self._get_summary_info()
 
-    def _get_summary_info(self) -> pd.DataFrame:
+    def _get_summary_info(self) -> pd.core.frame.DataFrame:
         """
         Get summary information for all stations.Runs on class instantiation.
         Output is used to match station codes and names to unique IWLS database id.
@@ -129,12 +129,12 @@ class IwlsApiConnector():
 
         return time_ranges_strings, metadata, url
 
-    def _get_timeseries(self,url: str, time_ranges_strings: pd.DataFrame, series_code: str):
+    def _get_timeseries(self,url: str, time_ranges_strings: pd.core.frame.DataFrame, series_code: str):
         """
         Send a series of queries to the IWLS API and return
 
         :param url: url used for queries (String)
-        :param time_ranges_string: pairs of start times and end times used for queries (pandas Dataframe)
+        :param time_ranges_string: pairs of start times and end times used for queries (pd.Dataframe)
         :param series_code: three letter identifer for time series (String)
                             'wlo' = Observed Water Levels
                             'wlp' = Tidal Predictions

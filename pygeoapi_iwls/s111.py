@@ -1,5 +1,7 @@
 # Standard library imports
 import h5py
+
+# Packages imports
 import numpy as np
 
 # Import local files
@@ -8,17 +10,22 @@ from provider_iwls.s111_def import S111Def
 
 class S111GeneratorDCF8(S100GeneratorDCF8):
     """
-    class for generating S-111 Data Coding Format 8 (Stationwise arrays)
-    files. Inherit from S100GeneratorDCF8
+    Class for generating S-111 Data Coding Format 8 (Stationwise arrays)
+    files. Inherits from S100 class.
     """
 
     def __init__(
             self,
             json_path: str,
             folder_path: str,
-            template_path: str
-    ):
-        # Call s100 base class with preconfigured S111 data
+            template_path: str):
+        """
+        S111 init method. Call s100 base class with preconfigured S111 data.
+
+        :param json_path: path to geojson to process (string)
+        :param folder_path: path to processing folder (string)
+        :param template_path: path to S-100 h5 file production template (string)
+        """
         super().__init__(json_path=json_path,
                          folder_path=folder_path,
                          template_path=template_path,
@@ -29,8 +36,9 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
             self,
             data: list):
         """
-        product specific pre formating to convert API response to valid
-        data arrays. Must be implemented by child class
+        Product specific pre formating to convert API response to valid
+        data arrays.
+
         :param data: raw current level data received from IWLS API call (json)
         :return: processed current level data (dict)
         """
@@ -58,6 +66,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
     ):
         """
         Update product specific (S-111) general metadata.
+
         :param h5_file: h5 file to update (hdf5)
         """
         # Surface Current Depth, No change from template
@@ -71,7 +80,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
             data: dict,
             metadata_attrs = None):
         """
-        Update feature level metadata (SurfaceCurrent)
+        Update feature level metadata (SurfaceCurrent).
 
         :param h5_file: h5 file to update (hdf5)
         :param data: formatted data arrays generated from _format_data_arrays (dict)
@@ -100,7 +109,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
             h5_file: h5py._hl.files.File,
             data: dict):
         """
-        Create data groups for each station
+        Create data groups for each station.
 
         :param h5_file: h5 file to update (hdf5)
         :param data: formatted data arrays generated from _format_data_arrays (dict)

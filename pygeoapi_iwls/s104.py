@@ -1,7 +1,9 @@
-# Packages imports
+# Standard library imports
+import h5py
+
+# Packages imprts
 import numpy as np
 import pandas as pd
-import h5py
 from scipy.stats import linregress
 
 # Import local files
@@ -10,16 +12,22 @@ from provider_iwls.s100 import S100GeneratorDCF8
 
 class S104GeneratorDCF8(S100GeneratorDCF8):
     """
-    class for generating S-111 Data Coding Format 8 (Stationwise arrays)
-    files. Inherit from S100GeneratorDCF8
+    Class for generating S-104 Data Coding Format 8 (Stationwise arrays)
+    files. Inherit from S100 class.
     """
+
     def __init__(
             self,
             json_path: str,
             folder_path: str,
             template_path: str):
+        """
+        S104 init method. Call s100 base class with preconfigured S104 data.
 
-        # Call s100 base class with preconfigured S104 data
+        :param json_path: path to geojson to process (string)
+        :param folder_path: path to processing folder (string)
+        :param template_path: path to S-100 h5 file production template (string)
+        """
         super().__init__(json_path=json_path,
                          folder_path=folder_path,
                          template_path=template_path,
@@ -33,6 +41,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
+
         param x: slope value calculated with a 1 hour rolling window (float)
         return: trend flag (int)
         """
@@ -49,7 +58,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self,
             df_wl: pd.core.frame.DataFrame):
         """
-        Generate water level trend flags from water level values
+        Generate water level trend flags from water level values.
+
         :param df_wl: pandas dataframe containing water level values (pandas.core.DataFrame)
         :return: pandas Dataframe containing trend Flags for respective water level values (pandas.core.DataFrame)
         """
@@ -84,8 +94,8 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self,
             data: list):
         """
-        product specific pre formating to convert API response to valid
-        data arrays.
+        Product specific pre formating to convert API response to valid data arrays.
+
         :param data: raw water level data received from IWLS API call (json)
         :return: processed water level data (dict)
 
@@ -157,7 +167,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             data: dict,
             metadata_attrs = None):
         """
-        Update feature level metadata (WaterLevel)
+        Update feature level metadata (WaterLevel).
 
         :param h5_file: h5 file to update (h5py._hl.files.File)
         :param data: formatted data arrays generated from _format_data_arrays (dict)
@@ -238,7 +248,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_attributes(h5_file, instance_wl_group, datasets, group_counter=i+1)
 
             ### Create Positioning Group ###
-
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )

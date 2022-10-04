@@ -1,23 +1,18 @@
 # Standard library imports
-import json
-import os
-import shutil
-import datetime
-import logging
+import json, os, shutil, datetime, logging, h5py
 
 # Packages imports
 from pathlib import Path
 import pandas as pd
 import numpy as np
-import h5py
 
 # Import utility script
 import provider_iwls.s100_util as s100_util
 
 class S100GeneratorDCF8():
     """
-    abstract base class for generating S-100 Data Coding Format 8 (Stationwise arrays)
-    files. Used as parent by S104GeneratorDCF8 and S111GeneratorDCF8
+    Abstract base class for generating S-100 Data Coding Format 8 (Stationwise arrays)
+    files. Used as parent by S104 and S111 generator classes.
     """
 
     def __init__(self,
@@ -26,11 +21,12 @@ class S100GeneratorDCF8():
                  template_path: str,
                  class_def: object):
         """
+        S100 init method.
 
-        S100GeneratorDCF8 init method
         :param json_path: path to geojson to process (string)
         :param folder_path: path to processing folder (string)
         :param template_path: path to S-100 h5 file production template (string)
+        :param class_def: S104 or S111 Def classes to extract hardcoded class data.
         """
         self.folder_path = Path(folder_path)
         self.json_path = Path(json_path)
@@ -45,7 +41,8 @@ class S100GeneratorDCF8():
     def create_s100_tiles_from_template(self,
                                         grid_path: str):
         """
-        Create S-100 tiles from production template
+        Create S-100 tiles from production template.
+
         :param grid_path: path to geojson tile grid (string)
         """
 
@@ -90,7 +87,7 @@ class S100GeneratorDCF8():
                           filename: str,
                           bbox: list):
         """
-        Create single S-100  file from production template
+        Create single S-100  file from production template.
 
         :param s100_data: Data to include in file (dict)
         :param filename: name of S-100 file (string)
@@ -115,8 +112,8 @@ class S100GeneratorDCF8():
             self,
             data: list):
         """
-        product specific pre formating to convert API response to valid
-        data arrays. Must be implemented by child class
+        Product specific pre formating to convert API response to valid
+        data arrays. Must be implemented by child class.
         """
         raise NotImplementedError('Must override _format_data_arrays')
 
@@ -125,7 +122,8 @@ class S100GeneratorDCF8():
                                  filename: str,
                                  bbox: list):
         """
-        Update general metadata (file level)
+        Update general metadata (file level).
+
         :param h5_file: h5 file to update (hdf5)
         :param filename: h5 file name (string)
         :param bbox: bounding box [minx,miny,maxx,maxy] (list)
@@ -170,7 +168,7 @@ class S100GeneratorDCF8():
                         s100_data: list,
                         code: str):
         """
-        Generate dataframe of water level information needed to produce S-100 files
+        Generate dataframe of water level/surface current information needed to produce S-100 files.
 
         :param s100_data: iwls json timeseries (Json)
         :param code: data type code (string)
@@ -202,7 +200,8 @@ class S100GeneratorDCF8():
             self,
             df: pd.core.frame.DataFrame) -> dict:
         """
-        Generate position for stations
+        Generate position for stations.
+
         :param df: pandas data frame of water level or current information information (pandas.core.DataFrame)
         :return position: latitudes and longitudes (dict)
         """
@@ -217,8 +216,7 @@ class S100GeneratorDCF8():
             self,
             h5_file: h5py._hl.files.File):
         """
-        Update product specific general metadata.
-        Must be implemented by child class
+        Update product specific general metadata. Must be implemented by child class.
         """
         raise NotImplementedError('Must override _update_product_specific_general_metadata')
 
@@ -253,12 +251,12 @@ class S100GeneratorDCF8():
                            datasets: tuple,
                            group_counter=1):
         """
-        Create data attributes for each station
+        Create data attributes for each station.
+
         :param group: Root group to assign values (h5py._hl.group.Group)
         :param dataset1: Water level or surface current dataset (pd.core.frame.DataFrame)
         :param dataset2: Water level trend or surface current direction dataset (pd.core.frame.DataFrame)
         :param group_counter: Group count for each station (int)
-
         """
 
         dataset1, dataset2 = datasets
@@ -327,14 +325,14 @@ class S100GeneratorDCF8():
                                  group_counter,
                                  attr_data
         ):
-        '''
-        Creates the dataset groups and attaches associated attributes and datasets
+        """
+        Creates the dataset groups and attaches associated attributes and datasets.
 
         :param h5_file: The output h5 file (h5py._hl.files.File)
         :param datasets: Tuple containing the two datasets (tuple)
         :param group_counter: Group counter for each station (int)
         :param attr_data: Attribute class that stores the metadata (object)
-        '''
+        """
         dataset1, dataset2 = datasets
 
         for i in range(attr_data.num_groups):
