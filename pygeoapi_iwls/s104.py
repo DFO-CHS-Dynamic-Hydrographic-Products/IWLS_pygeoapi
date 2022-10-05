@@ -15,7 +15,6 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     Class for generating S-104 Data Coding Format 8 (Stationwise arrays)
     files. Inherit from S100 class.
     """
-
     def __init__(
             self,
             json_path: str,
@@ -248,6 +247,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
             self._create_attributes(h5_file, instance_wl_group, datasets, group_counter=i+1)
 
             ### Create Positioning Group ###
+
             self._create_positioning_group(
                 h5_file, instance_group_path, instance_position['lat'], instance_position['lon']
             )

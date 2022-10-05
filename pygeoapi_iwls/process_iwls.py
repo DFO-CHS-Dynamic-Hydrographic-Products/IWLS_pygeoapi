@@ -6,7 +6,6 @@ import datetime
 import json
 import shutil
 import logging
-import shutil
 
 # Package imports
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
