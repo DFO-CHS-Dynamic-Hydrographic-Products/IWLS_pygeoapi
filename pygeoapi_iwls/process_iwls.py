@@ -1,6 +1,12 @@
-
 # Standard library imports
-import uuid, os, io, datetime, json, shutil, logging, shutil
+import uuid
+import os
+import io
+import datetime
+import json
+import shutil
+import logging
+import shutil
 
 # Package imports
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError

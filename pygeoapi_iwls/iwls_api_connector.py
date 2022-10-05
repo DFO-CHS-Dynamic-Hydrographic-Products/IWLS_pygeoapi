@@ -1,5 +1,12 @@
 # Standard library imports
-import requests, json, datetime, os, uuid, logging, requests_cache, dateutil.parser
+import requests
+import json
+import datetime
+import os
+import uuid
+import logging
+import requests_cache
+import dateutil.parser
 
 # Packages imports
 from zipfile import ZipFile
@@ -11,6 +18,9 @@ class IwlsApiConnector():
     Used as parent by ProviderIwlsWaterLevels and ProviderIwlsCurrents
     """
     def __init__(self):
+        """
+        Init function that provides summary data (from cached sessions if available)
+        """
         self.info = self._get_summary_info()
 
     def _get_summary_info(self) -> pd.core.frame.DataFrame:
@@ -18,7 +28,7 @@ class IwlsApiConnector():
         Get summary information for all stations.Runs on class instantiation.
         Output is used to match station codes and names to unique IWLS database id.
 
-        :returns: Pandas dataframe containing summary information for all stations
+        :returns: Pandas dataframe containing summary information for all stations (pd.DataFrame)
         """
 
         # Set up requests_cache session
@@ -96,7 +106,7 @@ class IwlsApiConnector():
         :returns: time_strings_range, metadata and url for query
         """
 
-        # Can only get 7 days of data per request, split data in multiple requests if needed
+        # Can only get 7 days of data per request, psplit data in multiple requests if needed
         #(ToDo: had check to block large requests in ProviderIwls class)
         start_time_dt = dateutil.parser.parse(start_time)
         end_time_dt = dateutil.parser.parse(end_time)

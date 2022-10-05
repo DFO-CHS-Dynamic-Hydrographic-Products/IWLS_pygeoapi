@@ -1,5 +1,11 @@
 # Standard library imports
-import requests, json, datetime, os, requests_cache, uuid, dateutil.parser
+import requests
+import json
+import datetime
+import os
+import requests_cache
+import uuid
+import dateutil.parser
 
 # Packages imports
 import pandas as pd

@@ -1,5 +1,9 @@
 # Standard library imports
-import requests, json, datetime, os, uuid
+import requests
+import json
+import datetime
+import os
+import uuid
 
 # Packages imports
 from zipfile import ZipFile
