@@ -3,23 +3,23 @@ import requests
 import json
 import datetime
 import os
+import requests_cache
+import uuid
+import dateutil.parser
+
 # Packages imports
 import pandas as pd
-import requests_cache
-import dateutil.parser
 from pygeoapi.provider.base import BaseProvider
-
-from provider_iwls.iwls import IwlsApiConnector
-
-
-#temp
 from zipfile import ZipFile
-import uuid
+
+# Local imports
+from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
 
 class ProviderIwls(BaseProvider):
     """
-    Provider abstract base class for iwls data
-    Used as parent by ProviderIwlsWaterLevels and ProviderIwlsCurrents
+    Provider abstract base class for iwls data. Used as parent by ProviderIwlsWaterLevels
+    and ProviderIwlsCurrents.
     """
     def __init__(self, provider_def):
         """Inherit from parent class"""
@@ -35,43 +35,43 @@ class ProviderIwls(BaseProvider):
 
     def get(self, identifier, **kwargs):
         """
-        Get Feature by id
+        Default `get` feature by id for IWLS.
+
         :param identifier: feature id (int)
-        
         :returns: feature collection
         """
         result = None
 
         # Establish connection to IWLS API
-        api = IwlsApiConnector()
+        api = IwlsApiConnectorWaterLevels()
+
         # Only latest 24h of data available throught get method
         now = datetime.datetime.now()
         tomorrow = now + datetime.timedelta(days=1)
         yesterday = now - datetime.timedelta(days=1)
         end_time = tomorrow.strftime('%Y-%m-%dT%H:%M:%SZ')
         start_time = yesterday.strftime('%Y-%m-%dT%H:%M:%SZ')
+
         # Pass query to IWLS API
-        result = self._provider_get_station_data(identifier,start_time,end_time,api)
+        return self._provider_get_station_data(identifier, start_time, end_time, api)
 
-        return result
-
-    def query(self, startindex=0, limit=10, resulttype='results',
+    def query(self, start_index=0, limit=10, result_type='results',
               bbox=[], datetime_=None, properties=[], sortby=[],
               select_properties=[], skip_geometry=False, q=None, **kwargs):
-        
+
         """
-        Query IWLS
+        Default query command for IWLS.
+
         :param startindex: starting record to return (default 0) (int)
         :param limit: number of records to return (default 10) (int)
-        :param resulttype: return results or hit limit (default results)
-        :param bbox: bounding box [minx,miny,maxx,maxy] (list) 
+        :param result_type: return results or hit limit (default results)
+        :param bbox: bounding box [minx,miny,maxx,maxy] (default empty list []) (list)
         :param datetime_: temporal (datestamp or extent) (string)
         :param properties: list of tuples (name, value) (list)
         :param sortby: list of dicts (property, order) (list)
         :param select_properties: list of property names (list)
         :param skip_geometry: bool of whether to skip geometry (default False) (bool)
-        :param q: full-text search term(s) (string)
-
+        :param q: full-text search term(s) (default None) (string)
         :returns: dict of 0..n GeoJSON features
         """
         result  = None
@@ -88,48 +88,52 @@ class ProviderIwls(BaseProvider):
         else:
             start_time = datetime_.split('/')[0]
             end_time = datetime_.split('/')[1]
-        # Establish connection to IWLS API
-        api = IwlsApiConnector()
-        # Pass query to IWLS API
-        result = self._provider_get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex,api)
 
-        return result
+        # Establish connection to IWLS API
+        api = IwlsApiConnectorWaterLevels()
+
+        # Pass query to IWLS API
+        return self._provider_get_timeseries_by_boundary(
+            start_time, end_time, bbox, limit, start_index, api
+        )
+
 
 class ProviderIwlsWaterLevels(ProviderIwls):
     """
     Provider class for iwls Water Level data
     """
     def __init__(self, provider_def):
-        """Inherit from parent class"""
+        """Inherits from ProviderIwls class"""
         super().__init__(provider_def)
 
-    def _provider_get_station_data(self,identifier,start_time,end_time,api):
-        """        
-        Used by Get Method
+    def _provider_get_station_data(self, identifier: int, start_time: str, end_time: str, api: IwlsApiConnectorWaterLevels):
+        """
+        Calls _get_station_data in IwlsApiConnectorWaterlevels class. Used by pygeoapi get method.
+
         :param identifier: station ID (int)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
-        :param api: api connection to IWLS (IwlsApiConnector)
-        
+        :param api: api connection to IWLS (IwlsApiConnectorWaterLevels)
+
         :returns: GeoJSON feature
         """
-        station_data = api.get_station_data(identifier,start_time,end_time)
-        return station_data
+        return api._get_station_data(identifier, start_time, end_time)
 
-    def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex,api):
-        """        
-        Used by Query Method
+    def _provider_get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list, limit: int, start_index: int, api: IwlsApiConnectorWaterLevels):
+        """
+        Calls _get_timeseries_by_boundary in IwlsApiConnectorWaterlevels class. Used by pygeoapi query method.
+
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param bbox: bounding box [minx,miny,maxx,maxy] (list)
         :param limit: number of records to return (default 10) (int)
         :param startindex: starting record to return (default 0) (int)
-        :param api: api connection to IWLS (IwlsApiConnector)
-
+        :param api: api connection to IWLS (IwlsApiConnectorWaterLevels)
         :returns: dict of 0..n GeoJSON features
         """
-        timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex)
-        return timeseries
+        return api._get_timeseries_by_boundary(
+            start_time, end_time, bbox, limit, start_index
+        )
 
 
 class ProviderIwlsCurrents(ProviderIwls):
@@ -137,34 +141,34 @@ class ProviderIwlsCurrents(ProviderIwls):
     Provider class for iwls Water Level Currents
     """
     def __init__(self, provider_def):
-        """Inherit from parent class"""
+        """Inherits from ProviderIwls class"""
         super().__init__(provider_def)
 
-    def _provider_get_station_data(self,identifier,start_time,end_time,api):
+    def _provider_get_station_data(self, identifier: int, start_time: str, end_time: str, api: IwlsApiConnectorCurrents):
         """
-        Used by Get Method
+        Calls _get_station_data in IwlsApiConnectorCurrents class. Used by pygeoapi get method.
+
         :param identifier: station ID (int)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
-        :param api: api connection to IWLS (IwlsApiConnector)
-
+        :param api: api connection to IWLS (IwlsApiConnectorCurrents)
         :returns: GeoJSON feature (json)
         """
 
-        station_data = api.get_station_data(identifier,start_time,end_time, dtype='wcs')
-        return station_data
+        return api._get_station_data(identifier, start_time, end_time)
 
-    def _provider_get_timeseries_by_boundary(self,start_time,end_time,bbox,limit,startindex,api):
+    def _provider_get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list, limit: int, start_index: int, api: IwlsApiConnectorCurrents):
         """
-        Used by Query Method
+        Calls _get_timeseries_by_boundary in IwlsApiConnectorCurrents class. Used by pygeoapi query method.
+
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param bbox: bounding box [minx,miny,maxx,maxy] (list)
         :param limit: number of records to return (default 10) (int)
         :param startindex: starting record to return (default 0) (int)
-        :param api: api connection to IWLS (IwlsApiConnector)
-
+        :param api: api connection to IWLS (IwlsApiConnectorCurrents)
         :returns: dict of 0..n GeoJSON features (json)
         """
-        timeseries = api.get_timeseries_by_boundary(start_time,end_time,bbox,limit,startindex, dtype='wcs')
-        return timeseries
+        return api._get_timeseries_by_boundary(
+            start_time, end_time, bbox, limit, start_index
+        )
