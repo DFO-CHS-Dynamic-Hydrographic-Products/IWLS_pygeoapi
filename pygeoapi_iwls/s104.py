@@ -36,12 +36,13 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     def _get_flags(
             self,
             x: float,
-            trend_treshold = 0.2):
+            trend_treshold: float = 0.2):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
 
         param x: slope value calculated with a 1 hour rolling window (float)
+        param trend_thresold: decision value to determine if slope is increasing/decreasing (default 0.2) (float)
         return: trend flag (int)
         """
         if np.isnan(x):

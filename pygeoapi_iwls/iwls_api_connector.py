@@ -70,7 +70,7 @@ class IwlsApiConnector():
         Return  station  exact official name from unique id
 
         :param iwls_id:unique IWLS database id (string)
-        :returns: Station Nname (string)
+        :returns: Station Name (string)
         """
         return self.info.loc[self.info.id==iwls_id].officialName.values[0]
 
@@ -183,8 +183,8 @@ class IwlsApiConnector():
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param bbox: bounding box [minx,miny,maxx,maxy] (list)
-        :param limit: number of records to return (default 10) (int)
-        :param start_index: starting record to return (default 0) (int)
+        :param limit: number of records to return (int)
+        :param start_index: starting record to return (int)
         :returns: lat/lon values in bounding box, list of stations, end index and unpopulated geojson (timeseries_data)
         """
         # use summary metadata info to find stations within request

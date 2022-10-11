@@ -20,7 +20,8 @@ import provider_iwls.s104 as s104
 import provider_iwls.s111 as s111
 
 #Process metadata and description
-PROCESS_METADATA = json.load(open('./templates/process_metadata.json'))
+with open('./templates/process_metadata.json', 'r', encoding='utf-8') as f:
+  PROCESS_METADATA = json.load(f)
 
 class S100Processor(BaseProcessor):
     """S-100 plugin process for pygeoAPI"""
@@ -37,7 +38,8 @@ class S100Processor(BaseProcessor):
         """
         Execute request to IWLS and create S111/S104 file.
 
-        :param data: User Input, format defined in PROCESS_METADATA
+        :param data: User Input, format defined in PROCESS_METADATA (json)
+        :param folder_cleanup: Removes s100 process files if true (bool)
         :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
         try:
