@@ -6,18 +6,53 @@ class Error_db():
     def __init__(self):
         self.db = 'error_statistics_test.db'
 
-    def add_record_water_level(self):
-        pass
+    def add_record_water_level(self,record):
+        print(record)
+        conn = sqlite3.connect(self.db)
+        cur = conn.cursor()
+        sql = (f'INSERT INTO water_level'
+               f'({record["station_code"]} {record["comp_time"]} '
+               f'{record["start_time"]} {record["end_time"]} {record["model"]} '
+               f'{record["mean"]} {record["median"]} {record["variance"]} '
+               f'{record["mean_lt"]} {record["median_lt"]} {record["variance_lt"]} )'
+               f'VALUES')
+        try:
+            print(sql)
+        except sqlite3.Error as error:
+            print(error)
 
-    def add_record_surface_current(self):
-        pass
+        finally:
+            if conn:
+                conn.close
+
+    def add_record_surace_current(self,record):
+        conn = sqlite3.connect(self.db)
+        cur = conn.cursor()
+        sql = (f'INSERT INTO surace_current'
+               f'({record["station_code"]} {record["comp_time"]} '
+               f'{record["start_time"]} {record["end_time"]} {record["model"]} '
+               f'{record["u_mean"]} {record["v_mean"]} {record["u_median"]} '
+               f'{record["v_median"]} {record["u_variance"]} {record["v_variance"]} )'
+               f'{record["u_mean_lt"]} {record["v_mean_lt"]} {record["u_median_lt"]} '
+               f'{record["v_median_lt"]} {record["u_variance_lt"]} {record["v_variance_lt"]} )'
+               f'VALUES')
+
+        try:
+           print(sql)
+        except sqlite3.Error as error:
+            print(error)
+
+        finally:
+            if conn:
+                conn.close
+        
 
     def query_latest_lt_stats(self):
         q_water_level = ('SELECT *'
                          'FROM water_level '
                          'ORDER BY ID DESC '
                          'LIMIT 1')
-        print(q_water_level)
+
         q_surface_current = ('SELECT *'
                              'FROM surface_current '
                              'ORDER BY ID DESC '
@@ -145,5 +180,19 @@ class Compute_stats_surface_current(Compute_stats):
     def update_db(self):
         pass
 
+
+sample_record_wl = {
+    'station_code': 7122,
+    'comp_time': '2019-11-13T19:18:00Z',
+    'start_time': '2019-11-13T19:18:00Z',
+    'end_time': '2019-11-13T19:18:00Z',
+    'model': 'test',
+    'mean': 3.4,
+    'median': 4.5,
+    'variance' :3.3,
+    'mean_lt': 31.4,
+    'median_lt': 2.5,
+    'variance_lt' :3.1}
+
 test_db = Error_db()
-test_db.query_latest_lt_stats()
+test_db.add_record_water_level(sample_record_wl)
