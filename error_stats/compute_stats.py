@@ -1,5 +1,5 @@
 import sqlite3
-
+import logging
 
 class Error_db():
 
@@ -17,9 +17,10 @@ class Error_db():
                f'{record["mean_lt"]} {record["median_lt"]} {record["variance_lt"]} )'
                f'VALUES')
         try:
-            print(sql)
+            cur.execute(sql)
+            
         except sqlite3.Error as error:
-            print(error)
+            logging.error(f'{error}')
 
         finally:
             if conn:
@@ -38,9 +39,10 @@ class Error_db():
                f'VALUES')
 
         try:
-           print(sql)
+           cur.execute(sql)
+
         except sqlite3.Error as error:
-            print(error)
+            logging.error(f'{error}')
 
         finally:
             if conn:
