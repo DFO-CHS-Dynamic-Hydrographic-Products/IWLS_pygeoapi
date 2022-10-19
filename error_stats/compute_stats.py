@@ -158,8 +158,35 @@ class Compute_stats_wl(Compute_stats):
     def update_lt_stats(self):
         pass
 
-    def update_db(self):
-        pass
+    def update_db(self,
+                  station_code,
+                  comp_time,
+                  start_time,
+                  end_time,
+                  model,
+                  mean,
+                  median,
+                  variance,
+                  mean_lt,
+                  median_lt,
+                  variance_lt
+                  ):
+
+        record = {
+            'station_code': station_code,
+            'comp_time': comp_time,
+            'start_time': start_time,
+            'end_time': end_time,
+            'model': model,
+            'mean': mean,
+            'median': median,
+            'variance': variance,
+            'mean_lt': mean_lt,
+            'median_lt': median_lt,
+            'variance_lt': variance_lt
+        }
+
+        Error_db().add_record_water_level
 
 
 class Compute_stats_surface_current(Compute_stats):
@@ -195,8 +222,47 @@ class Compute_stats_surface_current(Compute_stats):
     def update_lt_stats(self):
         pass
 
-    def update_db(self):
-        pass
+    def update_db(self,
+                  station_code,
+                  comp_time,
+                  start_time,
+                  end_time,
+                  model,
+                  mean_u,
+                  mean_v,
+                  median_u,
+                  median_v,
+                  variance_u,
+                  variance_v,
+                  mean_lt_u,
+                  mean_lt_v,
+                  median_lt_u,
+                  median_lt_v,
+                  variance_lt_u,
+                  variance_lt_v,
+                  ):
+
+        record = {
+            'station_code': station_code,
+            'comp_time': comp_time,
+            'start_time': start_time,
+            'end_time': end_time,
+            'model': model,
+            'mean_u': mean_u,
+            'mean_u': mean_v,
+            'median_u': median_u,
+            'median_v': median_v,
+            'variance_u': variance_u,
+            'variance_u': variance_v,
+            'mean_lt_u': mean_lt_u,
+            'mean_lt_v': mean_lt_v,
+            'median_lt_u': median_lt_u,
+            'median_lt_v': median_lt_v,
+            'variance_lt_u': variance_lt_u,
+            'variance_lt_v': variance_lt_v
+        }
+
+        Error_db().dd_record_surace_current
 
 
 sample_record_wl = {
