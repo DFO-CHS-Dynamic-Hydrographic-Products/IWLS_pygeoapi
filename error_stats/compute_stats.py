@@ -2,6 +2,8 @@ import sqlite3
 import logging
 import math
 
+from iwls import IwlsApiConnector
+
 
 class Error_db():
 
@@ -149,8 +151,24 @@ class Compute_stats_wl(Compute_stats):
     def _read_model(self):
         pass
 
-    def _read_station_data(self):
-        pass
+    def _read_station_data(self, start_time, end_time, station_codes):
+        """
+        Fetch observed stations data
+        :param station_codes: list of five digits station identifiers (list)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+
+        :return: list of observed stations water level data
+        """
+
+        data = []
+
+        for i in station_codes:
+            api = IwlsApiConnector()
+            station = api.get_station_data(
+                station, start_time, end_time, dtype='wl')
+            data.append(station)
+        return data
 
     def compute_error_stats(self):
         pass
@@ -213,8 +231,23 @@ class Compute_stats_surface_current(Compute_stats):
     def _read_model(self):
         pass
 
-    def _read_station_data(self):
-        pass
+    def _read_station_data(self, start_time, end_time, station_codes):
+        """
+        Fetch observed stations data
+        :param station_codes: list of five digits station identifiers (list)
+        :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+        :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
+
+        :return: list of observed stations surface current data
+        """
+
+        data = []
+        for i in station_codes:
+            api = IwlsApiConnector()
+            station = api.get_station_data(
+                station, start_time, end_time, dtype='wcs')
+            data.append(station)
+        return data
 
     def compute_error_stats(self):
         pass
@@ -262,7 +295,7 @@ class Compute_stats_surface_current(Compute_stats):
             'variance_lt_v': variance_lt_v
         }
 
-        Error_db().dd_record_surace_current
+        Error_db().add_record_surace_current
 
 
 sample_record_wl = {
@@ -279,4 +312,4 @@ sample_record_wl = {
     'variance_lt': 3.1}
 
 test_db = Error_db()
-test_db.add_record_water_level(sample_record_wl)
+# test_db.add_record_water_level(sample_record_wl)
