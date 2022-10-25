@@ -282,11 +282,11 @@ class Compute_stats_surface_current(Compute_stats):
             'end_time': end_time,
             'model': model,
             'mean_u': mean_u,
-            'mean_u': mean_v,
+            'mean_V': mean_v,
             'median_u': median_u,
             'median_v': median_v,
             'variance_u': variance_u,
-            'variance_u': variance_v,
+            'variance_V': variance_v,
             'mean_lt_u': mean_lt_u,
             'mean_lt_v': mean_lt_v,
             'median_lt_u': median_lt_u,
@@ -310,6 +310,26 @@ sample_record_wl = {
     'mean_lt': 31.4,
     'median_lt': 2.5,
     'variance_lt': 3.1}
+
+sample_record_wc = {
+    'station_code': 7122,
+    'comp_time': '2019-11-13T19:18:00Z',
+    'start_time': '2019-11-13T19:18:00Z',
+    'end_time': '2019-11-13T19:18:00Z',
+    'model': 'test',
+    'mean_u': 2.2,
+    'mean_V': 2.3,
+    'median_u': 3.3,
+    'median_v': 4.4,
+    'variance_u': 5.5,
+    'variance_v': 7.7,
+    'mean_lt_u': 8.8,
+    'mean_lt_v': 9.9,
+    'median_lt_u': 7.7,
+    'median_lt_v': 3.3,
+    'variance_lt_u': 5.3,
+    'variance_lt_v': 6.6}
+
 
 test_db = Error_db()
 # test_db.add_record_water_level(sample_record_wl)
