@@ -65,5 +65,6 @@ class SpineErrors():
 
         return errors_df
 
-errors = SpineErrors().compute_errors('2022-10-30T00:00:00Z','2022-10-30T00:30:00Z')
+errors = SpineErrors().compute_errors('2022-10-00T00:00:00Z','2022-10-30T23:59:00Z')
+errors.to_csv('spine_test.csv')
 print(errors)
