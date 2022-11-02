@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 
 # Import utility script
-import provider_iwls.s100_util as s100_util
+import provider_iwls.s100_processing.s100_util as s100_util
 
 class S100GeneratorDCF8():
     """

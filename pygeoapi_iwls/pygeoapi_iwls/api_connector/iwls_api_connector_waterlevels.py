@@ -12,7 +12,7 @@ import requests_cache
 import dateutil.parser
 
 # Local imports
-from provider_iwls.iwls_api_connector import IwlsApiConnector
+from provider_iwls.api_connector.iwls_api_connector import IwlsApiConnector
 
 class IwlsApiConnectorWaterLevels(IwlsApiConnector):
     """
@@ -80,7 +80,7 @@ class IwlsApiConnectorWaterLevels(IwlsApiConnector):
 
         timeseries_data['features'] = features
 
-        with open('test.json', 'w', encoding='utf-8') as f:
-            json.dump(timeseries_data, f, ensure_ascii=False, indent=4)
+        # with open('test.json', 'w', encoding='utf-8') as f:
+        #     json.dump(timeseries_data, f, ensure_ascii=False, indent=4)
 
         return timeseries_data

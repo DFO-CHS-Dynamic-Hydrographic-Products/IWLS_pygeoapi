@@ -5,8 +5,14 @@ import h5py
 import numpy as np
 
 # Import local files
-from provider_iwls.s100 import S100GeneratorDCF8
-from provider_iwls.s111_def import S111Def
+from provider_iwls.s100_processing.s100 import S100GeneratorDCF8
+
+class S111Def:
+    """ Class to store hardcoded S111 values """
+    dataset_names=('surfaceCurrentSpeed', 'surfaceCurrentDirection')
+    dataset_types=(np.float64, np.float64)
+    product_id='SurfaceCurrent'
+    file_type='111'
 
 class S111GeneratorDCF8(S100GeneratorDCF8):
     """
@@ -94,6 +100,7 @@ class S111GeneratorDCF8(S100GeneratorDCF8):
         # typeOfCurrentData, No change from template
         # verticalPositionUncertainty, currently unassessed
         # Number of Feature Instances
+
         # ToDo: numInstances is proposed for S111 1.1.1,
         # create here for now and move to template when 1.1.1 is finalized
 

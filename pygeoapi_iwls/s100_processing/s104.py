@@ -7,8 +7,14 @@ import pandas as pd
 from scipy.stats import linregress
 
 # Import local files
-from provider_iwls.s104_def import S104Def
-from provider_iwls.s100 import S100GeneratorDCF8
+from provider_iwls.s100_processing.s100 import S100GeneratorDCF8
+
+class S104Def:
+    """ Class to store hardcoded S104 values """
+    dataset_names=('waterLevelHeight', 'waterLevelTrend')
+    dataset_types=(np.float64, np.int8)
+    product_id='WaterLevel'
+    file_type='104'
 
 class S104GeneratorDCF8(S100GeneratorDCF8):
     """
