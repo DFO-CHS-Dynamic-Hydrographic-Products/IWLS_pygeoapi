@@ -1,7 +1,9 @@
 import json, requests
 import numpy as np
 import test_data
+import os
 
+### requests and tear down
 def run_request(request_type):
 
     headers = {
@@ -20,6 +22,13 @@ def run_request(request_type):
 
     return requests.post("http://localhost:5000/processes/s100/execution", headers=headers, data=data)
 
+def clean_up(test_dir):
+    # Filter all filters in test directory with a zip or .h5 extension, then remove
+    for item in test_dir.glob("*"):
+        if item.suffix == ".h5":
+            os.remove(item)
+
+### test logic
 def check_time_interval_index_attr(time_interval_index, h5_file_attr_names, product_type):
     # If timeRecordIndex attr is 1, timeRecordInterval attr should be present in h5 file
     if time_interval_index == 1:
