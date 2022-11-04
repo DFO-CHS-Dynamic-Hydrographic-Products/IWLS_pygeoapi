@@ -2,14 +2,11 @@
 import requests
 import json
 import datetime
-import os
-import uuid
 import logging
 import requests_cache
 import dateutil.parser
 
 # Packages imports
-from zipfile import ZipFile
 import pandas as pd
 
 class IwlsApiConnector():
@@ -82,18 +79,21 @@ class IwlsApiConnector():
         :cache_result: boolean, if true use requests_cache to cache results (bool)
         :returns: Station Metadata (JSON)
         """
-        station_id = self._id_from_station_code(station_code)
-        url = 'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/' + station_id + '/metadata'
-        params = {}
+        try:
+            station_id = self._id_from_station_code(station_code)
+            url = 'https://api-iwls.dfo-mpo.gc.ca/api/v1/stations/' + station_id + '/metadata'
+            params = {}
 
-        if cache_result == True:
-            s_stn_metadata = requests_cache.CachedSession('http_cache', backend='filesystem',expire_after=2629746)
-            r = s_stn_metadata.get(url=url, params=params)
-        else:
-            r = requests.get(url=url, params=params)
-        r.raise_for_status()
+            if cache_result == True:
+                s_stn_metadata = requests_cache.CachedSession('http_cache', backend='filesystem',expire_after=2629746)
+                r = s_stn_metadata.get(url=url, params=params)
+            else:
+                r = requests.get(url=url, params=params)
+            r.raise_for_status()
 
-        return r.json()
+            return r.json()
+        except requests.exceptions.RequestException as e:
+            raise logging.error(e)
 
     def _get_station_data(self, station_code: int, start_time: str, end_time: str) -> dict:
         """
@@ -154,26 +154,28 @@ class IwlsApiConnector():
                             'wcd1' = Observed Surface Currents Direction
         returns: series of pairs of time stamps and water level values (json)
         """
-        series_data = pd.DataFrame()
-        for i in time_ranges_strings:
-            params = {
-                'time-series-code':series_code,
-                'from':i[0],
-                'to': i[1]
-                }
-            r = requests.get(url=url, params=params)
-            r.raise_for_status()
-            series_data = pd.concat([series_data, pd.DataFrame.from_dict(r.json())])
+        try:
+           series_data = pd.DataFrame()
+           for i in time_ranges_strings:
+               params = {
+                   'time-series-code':series_code,
+                   'from':i[0],
+                   'to': i[1]
+                   }
+               r = requests.get(url=url, params=params)
+               r.raise_for_status()
+               series_data = pd.concat([series_data, pd.DataFrame.from_dict(r.json())])
 
-        if series_data.empty:
-                return json.dumps({'value':{}})
-        else:
-                series_data['eventDate'] = pd.to_datetime(series_data['eventDate'])
-                series_data = series_data.set_index('eventDate').sort_index()
-                series_data = series_data[['value']]
+           if series_data.empty:
+                   return json.dumps({'value':{}})
+           else:
+                   series_data['eventDate'] = pd.to_datetime(series_data['eventDate'])
+                   series_data = series_data.set_index('eventDate').sort_index()
+                   series_data = series_data[['value']]
 
-                return series_data.to_json(date_format='iso')
-
+                   return series_data.to_json(date_format='iso')
+        except requests.exceptions.RequestException as e:
+            raise logging.error(e)
 
     def _get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list,
                                     limit: int, start_index: int):

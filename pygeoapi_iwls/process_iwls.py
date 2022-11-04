@@ -1,7 +1,6 @@
 # Standard library imports
 import uuid
 import os
-import io
 import datetime
 import json
 import shutil
