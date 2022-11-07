@@ -1,9 +1,7 @@
 # Standard library imports
-import requests
 import json
 import datetime
 import os
-import requests_cache
 import uuid
 import dateutil.parser
 
@@ -40,8 +38,6 @@ class ProviderIwls(BaseProvider):
         :param identifier: feature id (int)
         :returns: feature collection
         """
-        result = None
-
         # Establish connection to IWLS API
         api = IwlsApiConnectorWaterLevels()
 

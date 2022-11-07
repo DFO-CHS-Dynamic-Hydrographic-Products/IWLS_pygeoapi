@@ -100,6 +100,7 @@ class S100Processor(BaseProcessor):
                 api = IwlsApiConnectorCurrents()
 
             result = api._get_timeseries_by_boundary(start_time, end_time, bbox)
+            assert len(result['features']) > 0, "Empty result returned"
 
             # Write Json to Folder
             response_path = os.path.join(folder_path, 'output.json')
@@ -115,11 +116,15 @@ class S100Processor(BaseProcessor):
             os.mkdir(s100_folder)
             if layer == 'S104':
                 logging.info('Creating S-104 Files')
-                s104.S104GeneratorDCF8(response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5').create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+                s104.S104GeneratorDCF8(
+                  response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
+                ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
             else:
                 logging.info('Creating S-111 Files')
-                s111.S111GeneratorDCF8(response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5').create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+                s111.S111GeneratorDCF8(
+                  response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
+                ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
             t_end = timer()
             logging.info(t_end - t_start)
