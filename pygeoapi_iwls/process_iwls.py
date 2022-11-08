@@ -6,11 +6,15 @@ import json
 import shutil
 import logging
 import json
+import tempfile
+import sys
+import traceback
 
 # Package imports
 from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 from zipfile import ZipFile
 from timeit import default_timer as timer
+from pathlib import Path
 
 # Local imports
 from provider_iwls.api_connector.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
@@ -33,7 +37,7 @@ class S100Processor(BaseProcessor):
         """
         super().__init__(processor_def, PROCESS_METADATA)
 
-    def execute(self, data: dict, folder_cleanup=True):
+    def execute(self, data: dict):
         """
         Execute request to IWLS and create S111/S104 file.
 
@@ -46,21 +50,8 @@ class S100Processor(BaseProcessor):
             logging.info("Processsing request")
 
             t_start = timer()
-            # Make folder to process request
-            folder_name = str(uuid.uuid4())
-            folder_path = os.path.join('./s100_process', folder_name)
-            os.mkdir(folder_path)
 
-            # Clean up request folders older than 24 hours to preserve space on the server
-            if folder_cleanup:
-                yesterday = (datetime.datetime.utcnow() - datetime.timedelta(days=1))
-                for root,directories,files in os.walk('./s100_process'):
-                    for d in directories:
-                        timestamp = datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(root,d)))
-                        if timestamp < yesterday:
-                            shutil.rmtree(os.path.join(root,d))
-
-            # Get Request parameters from Inputs
+              # Get Request parameters from Inputs
             start_time = data['start_time']
             if start_time is None:
                 raise ProcessorExecuteError('Cannot process without a valid Start Time')
@@ -100,62 +91,85 @@ class S100Processor(BaseProcessor):
                 api = IwlsApiConnectorCurrents()
 
             result = api._get_timeseries_by_boundary(start_time, end_time, bbox)
-            assert len(result['features']) > 0, "Empty result returned"
+            if len(result['features']) == 0:
+              logging.error("result features are 0")
+
+#            result['features'] > 0, "Empty result returned"
+
 
             # Write Json to Folder
-            response_path = os.path.join(folder_path, 'output.json')
-            with open(response_path, 'w', encoding='utf-8') as f:
-                json.dump(result, f, ensure_ascii=False, indent=4)
+            with tempfile.TemporaryDirectory() as folder_path:
+              s100_folder = Path(folder_path).joinpath('s100')
+              os.mkdir(s100_folder)
 
-            t_end = timer()
-            logging.info(t_end - t_start)
-            t_start = timer()
+              response_path = os.path.join(folder_path, 'output.json')
+              with open(response_path, 'w', encoding='utf-8') as f:
+                  json.dump(result, f, ensure_ascii=False, indent=4)
 
-            # Create S-100 Files from Geojson return
-            s100_folder = os.path.join(folder_path, 's100')
-            os.mkdir(s100_folder)
-            if layer == 'S104':
-                logging.info('Creating S-104 Files')
-                s104.S104GeneratorDCF8(
-                  response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
-                ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+              t_end = timer()
+              logging.info(t_end - t_start)
+              t_start = timer()
 
-            else:
-                logging.info('Creating S-111 Files')
-                s111.S111GeneratorDCF8(
-                  response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
-                ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+              # Create S-100 Files from Geojson return
 
-            t_end = timer()
-            logging.info(t_end - t_start)
-            logging.info('Creating Archive and Returning Result')
-            t_start = timer()
-            # Create Zip File containing S-104
+              if layer == 'S104':
+                  logging.info('Creating S-104 Files')
+                  s104.S104GeneratorDCF8(
+                    response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
+                  ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
-            # Gen archive
-            zip_folder = os.path.join(s100_folder)
-            zip_file = os.path.join(folder_path,'100.zip')
-            zip_dest = os.path.join(folder_path,'100')
-            shutil.make_archive(zip_dest,'zip', zip_folder)
-            with open(zip_file, 'rb') as f:
-                value = f.read()
+              else:
+                  logging.info('Creating S-111 Files')
+                  s111.S111GeneratorDCF8(
+                    response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
+                  ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
-            outputs = {
-                'id': 'zip',
-                'value': value
-                }
+              t_end = timer()
+              logging.info(t_end - t_start)
+              logging.info('Creating Archive and Returning Result')
+              t_start = timer()
 
+              # Create Zip File containing S-104
+              logging.info("about to create zip file")
 
-            t_end = timer()
-            logging.info(t_end - t_start)
+              # Gen archive
+              zip_dest = os.path.join(folder_path,'100')
+              shutil.make_archive(zip_des,'zip', s100_folder)
 
-            logging.info("Completed Process")
+              zip_file = os.path.join(folder_path,'100.zip')
+              with open(zip_file, 'rb') as f:
+                  value = f.read()
 
-            return 'application/zip', value
+              t_end = timer()
+              logging.info(t_end - t_start)
+
+              logging.info("Completed Process")
+
+              return 'application/zip', value
 
         except Exception as e:
-            logging.info(f'Error: {e}\nExiting process. See log file for more details.')
-            logging.error(e, exc_info=True)
+
+          exc_info = sys.exc_info()
+          error = ''.join(traceback.format_exception(*exc_info))
+
+          with tempfile.TemporaryDirectory() as folder_path:
+            zip_path = Path(folder_path).joinpath('s100')
+            os.mkdir(zip_path)
+
+            with open(Path(zip_path).joinpath('error.json'), 'w') as f:
+              json.dump(error, f)
+            value = create_zipped_data(zip_path, folder_path)
+
+            return 'application/zip', value
+    def create_zipped_data(zip_path, zip_dest, folder_path, zip_folder_name="100"):
+
+        # Gen archive
+        zip_dest = os.path.join(folder_path, zip_filename)
+        shutil.make_archive(zip_dest,'zip', zip_path)
+
+        zip_filename = os.path.join(folder_path, zip_folder_name + '.zip')
+        with open(zip_filename, 'rb') as f:
+           return f.read()
 
     def __repr__(self):
         return '<S100Processor> {}'.format(self.name)
