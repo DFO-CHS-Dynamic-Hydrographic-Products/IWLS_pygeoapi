@@ -14,10 +14,10 @@ from zipfile import ZipFile
 from timeit import default_timer as timer
 
 # Local imports
-from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
-from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
-import provider_iwls.s104 as s104
-import provider_iwls.s111 as s111
+from provider_iwls.api_connector.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+from provider_iwls.api_connector.iwls_api_connector_currents import IwlsApiConnectorCurrents
+import provider_iwls.s100_processing.s104 as s104
+import provider_iwls.s100_processing.s111 as s111
 
 #Process metadata and description
 with open('./templates/process_metadata.json', 'r', encoding='utf-8') as f:

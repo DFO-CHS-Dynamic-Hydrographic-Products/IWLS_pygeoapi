@@ -4,10 +4,12 @@ from pathlib import Path
 from zipfile import ZipFile
 from datetime import datetime
 import numpy as np
+import os
 
 import test_data
 import test_util
 
+test_dir = Path('.')
 h5_filename = '104CA0024900N12400W.h5'
 product_attr_name = "waterLevel"
 product_name = "WaterLevel"
@@ -19,11 +21,13 @@ def h5_file():
     if response.status_code == 200:
         print("Success")
         zip = ZipFile(io.BytesIO(response.content), 'r')
-        zip.extractall("./")
-        assert Path('./104CA0024900N12400W.h5').exists(), "H5 file not available"
+        zip.extractall(test_dir)
+        assert test_dir.joinpath(h5_filename).exists(), "H5 file not available"
 
         with h5py.File(h5_filename, 'r') as h5_file:
             yield h5_file
+
+        test_util.clean_up(test_dir)
     else:
         print(f'Error processing request: {response.status_code}')
 

@@ -7,6 +7,7 @@ from datetime import datetime
 import test_data
 import test_util
 
+test_dir = Path('.')
 h5_filename = '111CA0024900N12400W.h5'
 product_attr_name = "surfaceCurrent"
 product_name = "SurfaceCurrent"
@@ -18,11 +19,13 @@ def h5_file():
     if response.status_code == 200:
         print("Success")
         zip = ZipFile(io.BytesIO(response.content), 'r')
-        zip.extractall("./")
-        assert Path('./111CA0024900N12400W.h5').exists(), "H5 file not available"
+        zip.extractall(test_dir)
+        assert Path(f'./').exists(), "H5 file not available"
 
         with h5py.File(h5_filename, 'r') as h5_file:
             yield h5_file
+
+        test_util.clean_up(test_dir)
     else:
         print(f'Error processing request: {response.status_code}')
 

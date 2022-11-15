@@ -13,8 +13,8 @@ from pygeoapi.provider.base import BaseProvider
 from zipfile import ZipFile
 
 # Local imports
-from provider_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
-from provider_iwls.iwls_api_connector_currents import IwlsApiConnectorCurrents
+from provider_iwls.api_connector.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+from provider_iwls.api_connector.iwls_api_connector_currents import IwlsApiConnectorCurrents
 
 class ProviderIwls(BaseProvider):
     """
