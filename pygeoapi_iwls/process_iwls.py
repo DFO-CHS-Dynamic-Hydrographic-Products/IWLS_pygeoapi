@@ -1,5 +1,4 @@
 # Standard library imports
-import uuid
 import os
 import datetime
 import json
@@ -15,6 +14,7 @@ from pygeoapi.process.base import BaseProcessor, ProcessorExecuteError
 from zipfile import ZipFile
 from timeit import default_timer as timer
 from pathlib import Path
+from dataclasses import dataclass
 
 # Local imports
 from provider_iwls.api_connector.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
@@ -48,41 +48,13 @@ class S100Processor(BaseProcessor):
         try:
 
             logging.info("Processsing request")
-
             t_start = timer()
 
-              # Get Request parameters from Inputs
-            start_time = data['start_time']
-            if start_time is None:
-                raise ProcessorExecuteError('Cannot process without a valid Start Time')
+            logging.info("Validating Inputs")
+            bbox, layer = validate_inputs(data)
 
-            end_time = data['end_time']
-            if end_time is None:
-                raise ProcessorExecuteError('Cannot process without a valid End Time')
-
-            bbox_string = data['bbox']
-            if bbox_string is None:
-                raise ProcessorExecuteError('Cannot process without a Bounding Box')
-
-            layer = data['layer']
-            if layer != 'S104' and layer != 'S111':
-                raise ProcessorExecuteError('Cannot process without a valid layer name (S104 or S111)')
-
-            # Raise error if requesting more data than the time limit
-            start_time_datetime = datetime.datetime.strptime(start_time, "%Y-%m-%dT%H:%M:%SZ")
-            end_time_datetime = datetime.datetime.strptime(end_time, "%Y-%m-%dT%H:%M:%SZ")
-            time_delta = (start_time_datetime - end_time_datetime).total_seconds() / 3600
-            if time_delta > 96:
-                raise ProcessorExecuteError('Difference between start time and end time greater than 4 days')
-
-            bbox =  [float(x) for x in bbox_string.split(',')]
-
-            t_end = timer()
-            logging.info(t_end - t_start)
             logging.info("Sending Request to IWLS")
-            t_start = timer()
             # Send Request to IWLS API and return geojson
-
             # Pass query to IWLS API
             if layer == 'S104':
                 # Establish connection to IWLS API
@@ -90,86 +62,149 @@ class S100Processor(BaseProcessor):
             else:
                 api = IwlsApiConnectorCurrents()
 
-            result = api._get_timeseries_by_boundary(start_time, end_time, bbox)
-            if len(result['features']) == 0:
-              logging.error("result features are 0")
+            result = api._get_timeseries_by_boundary(data['start_time'], data['end_time'], bbox)
 
-#            result['features'] > 0, "Empty result returned"
-
-
-            # Write Json to Folder
-            with tempfile.TemporaryDirectory() as folder_path:
-              s100_folder = Path(folder_path).joinpath('s100')
+            # Create a temp file to temporarily create and read in zip file
+            with tempfile.TemporaryDirectory() as temp_folder_path:
+              s100_folder_path = Path(temp_folder_path).joinpath('s100')
               os.mkdir(s100_folder)
 
-              response_path = os.path.join(folder_path, 'output.json')
-              with open(response_path, 'w', encoding='utf-8') as f:
-                  json.dump(result, f, ensure_ascii=False, indent=4)
+              result_path = os.path.join(temp_folder_path, 'output.json')
+              with open(result_path, 'w', encoding='utf-8') as output_file:
+                  json.dump(result, output_file, ensure_ascii=False, indent=4)
 
-              t_end = timer()
-              logging.info(t_end - t_start)
-              t_start = timer()
-
-              # Create S-100 Files from Geojson return
-
-              if layer == 'S104':
-                  logging.info('Creating S-104 Files')
-                  s104.S104GeneratorDCF8(
-                    response_path,s100_folder,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
-                  ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
-
-              else:
-                  logging.info('Creating S-111 Files')
-                  s111.S111GeneratorDCF8(
-                    response_path,s100_folder,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
-                  ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
-
-              t_end = timer()
-              logging.info(t_end - t_start)
-              logging.info('Creating Archive and Returning Result')
-              t_start = timer()
+              # Process s100 request to h5 file
+              self.process_s100_request(result_path, s100_folder_path, layer)
 
               # Create Zip File containing S-104
-              logging.info("about to create zip file")
+              logging.info('Creating Archive and Returning Result')
 
-              # Gen archive
-              zip_dest = os.path.join(folder_path,'100')
-              shutil.make_archive(zip_des,'zip', s100_folder)
+              # Create response.json file for a status report for client
+              success_dict_resp = format_http_response(200, "OK")
+              with open(Path(s100_folder_path).joinpath('response.json'), 'w') as f:
+                json.dump(success_dict_resp, f)
 
-              zip_file = os.path.join(folder_path,'100.zip')
+              # Make zip file
+              zip_dest = os.path.join(temp_folder_path,'100')
+              shutil.make_archive(zip_dest,'zip', s100_folder_path)
+
+              # Read in zip file
+              zip_file = os.path.join(temp_folder_path,'100.zip')
               with open(zip_file, 'rb') as f:
                   value = f.read()
 
-              t_end = timer()
-              logging.info(t_end - t_start)
-
               logging.info("Completed Process")
+              t_end = round(timer() - t_start, 2)
+              logging.info(f"Total time to process request {t_end}")
 
+              # Return encoded zip file
               return 'application/zip', value
 
+        except InputValidationError as e:
+
+          # Log stored error from InputValidation data class
+          logging.error(f"InputValidationError: {e.status_code}, {e.message}")
+
+          # Return detailed error message to clients if input validation error
+          error_dict_resp = format_http_response(e.status_code, e.message, success=False)
+
+          return create_zip(error_dict_resp)
+
         except Exception as e:
+          # Log error from stack
+          logging.error(e, exc_info=True)
 
-          exc_info = sys.exc_info()
-          error = ''.join(traceback.format_exception(*exc_info))
+          # Return error message to clients if any other error
+          error_dict_resp = format_http_response(500, "Internal Server Error", success=False)
 
-          with tempfile.TemporaryDirectory() as folder_path:
-            zip_path = Path(folder_path).joinpath('s100')
-            os.mkdir(zip_path)
+          return create_zip(error_dict_resp)
 
-            with open(Path(zip_path).joinpath('error.json'), 'w') as f:
-              json.dump(error, f)
-            value = create_zipped_data(zip_path, folder_path)
+    def process_s100_request(self, response_path: str, s100_folder_path: str, layer: str):
+        # Create S-100 Files from Geojson return
+        if layer == 'S104':
+            logging.info('Creating S-104 Files')
+            s104.S104GeneratorDCF8(
+              response_path,s100_folder_path,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
+            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
-            return 'application/zip', value
-    def create_zipped_data(zip_path, zip_dest, folder_path, zip_folder_name="100"):
+        else:
+            logging.info('Creating S-111 Files')
+            s111.S111GeneratorDCF8(
+              response_path,s100_folder_path,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
+            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
-        # Gen archive
-        zip_dest = os.path.join(folder_path, zip_filename)
-        shutil.make_archive(zip_dest,'zip', zip_path)
-
-        zip_filename = os.path.join(folder_path, zip_folder_name + '.zip')
-        with open(zip_filename, 'rb') as f:
-           return f.read()
 
     def __repr__(self):
         return '<S100Processor> {}'.format(self.name)
+
+@dataclass
+class InputValidationError(BaseException):
+    status_code: int
+    message: str
+
+def create_zip(error_dict_resp):
+      response_filename = 'response.json'
+      output_filename = 'response.zip'
+
+      # Create temp file
+      with tempfile.TemporaryDirectory() as folder_path:
+        folder_path = Path(folder_path)
+        output_path = folder_path.joinpath(output_filename)
+
+        # Create response.json containing error message
+        with open(folder_path.joinpath(response_filename), 'w') as f:
+          json.dump(error_dict_resp, f)
+
+        # Create zip file
+        with ZipFile(output_path, 'w') as zipf:
+          zipf.write(folder_path.joinpath(response_filename), arcname=response_filename)
+
+        # Read in zip file
+        with open(output_path, 'rb') as f:
+            value = f.read()
+
+        return 'application/zip', value
+
+def format_http_response(status_code, message, success=True):
+    # Foramt http response
+    if success:
+      return {"status": "success", "body": { 'code' : status_code, 'message': message}}
+    else:
+      return {"status": "error", "body": { 'code' : status_code, 'message': message}}
+
+def parse_datetime_text(date_text, datetime_format="%Y-%m-%dT%H:%M:%SZ"):
+    try:
+        return datetime.datetime.strptime(date_text, datetime_format)
+    except ValueError:
+        raise InputValidationError(400, f"Incorrect data format, should be {datetime_format}")
+
+def parse_bbox_text(bbox_text):
+    # Test bounding box cases
+    try:
+      bbox = [float(x) for x in bbox_text.split(',')]
+    except ValueError as value_error_:
+      raise InputValidationError(400, "bad format") from value_error_
+    if len(bbox) != 4:
+      raise InputValidationError(400, "Invalid number of values in bounding box, \
+      should be: bbox:<longitude>,<latitude>,<longitude>,<latitude>")
+    if not (-90 <= bbox[1] <= 90) and (-90 <= bbox[3] <= 90):
+      raise InputValidationError(400, "Bounding box latitudes must be between -90 and 90")
+    if not (-180 <= bbox[0] <= 180) and (-180 <= bbox[2] <= 180):
+      raise InputValidationError(400, "Bounding box longitudes must be between -180 and 180")
+    return bbox
+
+def validate_inputs(data):
+    start_time_datetime = parse_datetime_text(data['start_time'])
+    end_time_datetime = parse_datetime_text(data['end_time'])
+
+    bbox = parse_bbox_text(data['bbox'])
+
+    layer = data['layer']
+    if layer != 'S104' and layer != 'S111':
+        raise InputValidationError(400, 'Cannot process without a valid layer name (S104 or S111)')
+
+    # Raise error if requesting more data than the time limit
+    time_delta = (start_time_datetime - end_time_datetime).total_seconds() / 3600
+    if time_delta > 96:
+        raise InputValidationError(400, 'Difference between start time and end time greater than 4 days')
+    return bbox, layer
