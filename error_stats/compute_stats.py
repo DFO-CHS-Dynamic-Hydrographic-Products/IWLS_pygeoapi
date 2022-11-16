@@ -1,8 +1,10 @@
 import sqlite3
 import logging
 import math
+import sys
+sys.path.append('../')
 
-from iwls import IwlsApiConnector
+from pygeoapi_iwls.iwls_api_connector_waterlevels  import IwlsApiConnectorWaterLevels
 
 
 class Error_db():
@@ -164,7 +166,7 @@ class Compute_stats_wl(Compute_stats):
         data = []
 
         for i in station_codes:
-            api = IwlsApiConnector()
+            api = IwlsApiConnectorWaterLevels()
             station = api.get_station_data(
                 station, start_time, end_time, dtype='wl')
             data.append(station)

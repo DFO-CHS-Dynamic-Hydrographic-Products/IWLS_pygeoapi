@@ -1,12 +1,10 @@
 
 import datetime
 import sys
-sys.path.append('../')
-
+sys.path.append('../pygeoapi_iwls/')
+print(sys.path)
 import pandas as pd
-from pygeoapi_iwls import iwls
-
-
+from provider_iwls.api_connector.iwls_api_connector_waterlevels  import IwlsApiConnectorWaterLevels
 
 class SpineErrors():
     def __init__(self):
@@ -20,7 +18,7 @@ class SpineErrors():
         :returns: dict of pandas.DataFrame
         """
         codes = self.spine_stations['code'].to_list()
-        api = iwls.IwlsApiConnector()
+        api = IwlsApiConnectorWaterLevels()
         stns_data = {}
         for i in codes:
             stn = api.get_station_data(i, start_time, end_time)
@@ -93,6 +91,6 @@ class SpineErrors():
         errors.to_csv(f'{start_time}.csv')
 
 
-#errors = SpineErrors().compute_errors('2022-10-00T00:00:00Z','2022-10-30T23:59:00Z')
+errors = SpineErrors().compute_errors('2022-10-00T00:00:00Z','2022-10-30T23:59:00Z')
 #errors.to_csv('spine_test.csv')
 #print(errors)
