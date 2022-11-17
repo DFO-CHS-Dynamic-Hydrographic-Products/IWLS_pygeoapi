@@ -37,10 +37,18 @@ class S100Processor(BaseProcessor):
         """
         super().__init__(processor_def, PROCESS_METADATA)
 
+        # Request input formats
         self.datetime_format="%Y-%m-%dT%H:%M:%SZ"
+        self.valid_layer_names = 'S111', 'S104'
         self.bbox_format = "\'bbox:<longitude>,<latitude>,<longitude>,<latitude>\'"
+        self.datetime_limit = 96
+
+        # Output status json file name
         self.response_filename = 'response.json'
+
+        # Temporary file for zip output
         self.output_dir_name = 'output_response'
+
 
     def execute(self, data: dict):
         """
@@ -99,6 +107,26 @@ class S100Processor(BaseProcessor):
     def __repr__(self):
         return '<S100Processor> {}'.format(self.name)
 
+    def send_api_request(self, layer: str, bbox: list, start_time: str, end_time: str):
+        '''
+        Query pygeoapi database and make request given user validated inputs.
+
+        :param layer: Layer name, i.e. S104/S111 (str)
+        :param bbox: List containing bounding box coordinates (list)
+        :param start_time: Start time for request (str)
+        :param end_time: End time request (str)
+        :returns: Api request result (dict)
+        '''
+        # Send Request to IWLS API
+        if layer == 'S104':
+            # Establish connection to IWLS API
+            api = IwlsApiConnectorWaterLevels()
+        else:
+            api = IwlsApiConnectorCurrents()
+
+        # Pass query to IWLS API and return geojson
+        return api._get_timeseries_by_boundary(start_time, end_time, bbox)
+
     def process_s100_request(self, temp_folder_path: str, layer: str, result: dict):
         '''
         Process a s100 request through the s104/s111 generator classes.
@@ -132,26 +160,6 @@ class S100Processor(BaseProcessor):
             ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
 
         return s100_folder_path
-
-    def send_api_request(self, layer: str, bbox: list, start_time: str, end_time: str):
-        '''
-        Query pygeoapi database and make request given user validated inputs.
-
-        :param layer: Layer name, i.e. S104/S111 (str)
-        :param bbox: List containing bounding box coordinates (list)
-        :param start_time: Start time for request (str)
-        :param end_time: End time request (str)
-        :returns: Api request result (dict)
-        '''
-        # Send Request to IWLS API
-        if layer == 'S104':
-            # Establish connection to IWLS API
-            api = IwlsApiConnectorWaterLevels()
-        else:
-            api = IwlsApiConnectorCurrents()
-
-        # Pass query to IWLS API
-        return api._get_timeseries_by_boundary(start_time, end_time, bbox)
 
     def create_success_zip(self, temp_folder_path: str, s100_folder_path: str):
         '''Create an zip fille containing the response json and the h5 file.
@@ -225,7 +233,7 @@ class S100Processor(BaseProcessor):
             # Parse datetime and throw specified error if unable to parse
             return datetime.datetime.strptime(date_text, self.datetime_format)
         except ValueError:
-            raise InputValidationError(400, f"Incorrect data format, should be {self.datetime_format}")
+            raise InputValidationError(400, f"Incorrect datetime format, should be {self.datetime_format} but got {date_text}")
 
     def parse_bbox_text(self, bbox_text):
         '''
@@ -237,20 +245,19 @@ class S100Processor(BaseProcessor):
         try:
           # Parse bounding box from string to list
           bbox = [float(x) for x in bbox_text.split(',')]
+
         except ValueError as value_error_:
-          raise InputValidationError(400, "Unable to parse bounding box,\
-             format should be: {self.bbox_format}") from value_error_
+          raise InputValidationError(400, f"Unable to parse bounding box, format should be: {self.bbox_format}.") from value_error_
 
         # Ensure that bounding box length contains correct number of coordinate points
         if len(bbox) != 4:
-          raise InputValidationError(400, "Invalid number of values in bounding box, \
-          should be {self.bbox_format}")
+          raise InputValidationError(400, f"Invalid number of bounding box values, should be 4 but found {str(len(bbox))}. Suggested format in a request is: {self.bbox_format}.")
 
         # Validate lat/lon values
         if not (-90 <= bbox[1] <= 90) and (-90 <= bbox[3] <= 90):
-          raise InputValidationError(400, "Bounding box latitudes must be between -90 and 90")
+          raise InputValidationError(400, "Bounding box latitudes must be between -90 and 90.")
         if not (-180 <= bbox[0] <= 180) and (-180 <= bbox[2] <= 180):
-          raise InputValidationError(400, "Bounding box longitudes must be between -180 and 180")
+          raise InputValidationError(400, "Bounding box longitudes must be between -180 and 180.")
 
         return bbox
 
@@ -269,14 +276,14 @@ class S100Processor(BaseProcessor):
         bbox = self.parse_bbox_text(data['bbox'])
 
         # Extract layer type and ensure it is valid i.e. S104/S111
-        layer = data['layer']
-        if layer != 'S104' and layer != 'S111':
+        layer = data['layer'].capitalize()
+        if layer != self.valid_layer_names[0] and layer != self.valid_layer_names[1]:
             raise InputValidationError(400, 'Cannot process without a valid layer name (S104 or S111)')
 
         # Raise error if requesting more data than the time limit
         time_delta = (start_time_datetime - end_time_datetime).total_seconds() / 3600
-        if time_delta > 96:
-            raise InputValidationError(400, 'Difference between start time and end time greater than 4 days')
+        if time_delta > self.datetime_limit:
+            raise InputValidationError(400, f'Difference between start time and end time cannot exceed {round(time_delta/24, 2)} days or {time_delta} hours.')
 
         return bbox, layer
 
