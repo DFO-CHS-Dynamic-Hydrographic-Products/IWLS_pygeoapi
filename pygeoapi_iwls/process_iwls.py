@@ -33,9 +33,14 @@ class S100Processor(BaseProcessor):
         """
         Initialize S100 object.
 
-        :param processor_def: provider definition
+        :param processor_def: Provider definition
         """
         super().__init__(processor_def, PROCESS_METADATA)
+
+        self.datetime_format="%Y-%m-%dT%H:%M:%SZ"
+        self.bbox_format = "\'bbox:<longitude>,<latitude>,<longitude>,<latitude>\'"
+        self.response_filename = 'response.json'
+        self.output_dir_name = 'output_response'
 
     def execute(self, data: dict):
         """
@@ -46,165 +51,236 @@ class S100Processor(BaseProcessor):
         :returns:  zip archive of S-100 files, MimeType: 'application/zip',
         """
         try:
-
             logging.info("Processsing request")
             t_start = timer()
 
             logging.info("Validating Inputs")
-            bbox, layer = validate_inputs(data)
+            bbox, layer = self.validate_inputs(data)
 
             logging.info("Sending Request to IWLS")
-            # Send Request to IWLS API and return geojson
-            # Pass query to IWLS API
-            if layer == 'S104':
-                # Establish connection to IWLS API
-                api = IwlsApiConnectorWaterLevels()
-            else:
-                api = IwlsApiConnectorCurrents()
-
-            result = api._get_timeseries_by_boundary(data['start_time'], data['end_time'], bbox)
+            result = self.send_api_request(layer, bbox, data['start_time'], data['end_time'])
 
             # Create a temp file to temporarily create and read in zip file
             with tempfile.TemporaryDirectory() as temp_folder_path:
-              s100_folder_path = Path(temp_folder_path).joinpath('s100')
-              os.mkdir(s100_folder)
 
-              result_path = os.path.join(temp_folder_path, 'output.json')
-              with open(result_path, 'w', encoding='utf-8') as output_file:
-                  json.dump(result, output_file, ensure_ascii=False, indent=4)
+              logging.info("Processing S100 Request")
+              s100_folder_path = self.process_s100_request(temp_folder_path, layer, result)
 
-              # Process s100 request to h5 file
-              self.process_s100_request(result_path, s100_folder_path, layer)
-
-              # Create Zip File containing S-104
               logging.info('Creating Archive and Returning Result')
-
-              # Create response.json file for a status report for client
-              success_dict_resp = format_http_response(200, "OK")
-              with open(Path(s100_folder_path).joinpath('response.json'), 'w') as f:
-                json.dump(success_dict_resp, f)
-
-              # Make zip file
-              zip_dest = os.path.join(temp_folder_path,'100')
-              shutil.make_archive(zip_dest,'zip', s100_folder_path)
-
-              # Read in zip file
-              zip_file = os.path.join(temp_folder_path,'100.zip')
-              with open(zip_file, 'rb') as f:
-                  value = f.read()
+              value = self.create_success_zip(temp_folder_path, s100_folder_path)
 
               logging.info("Completed Process")
-              t_end = round(timer() - t_start, 2)
-              logging.info(f"Total time to process request {t_end}")
+              logging.info(f"Total time to process request {round(timer() - t_start, 2)}")
 
               # Return encoded zip file
               return 'application/zip', value
 
         except InputValidationError as e:
-
           # Log stored error from InputValidation data class
           logging.error(f"InputValidationError: {e.status_code}, {e.message}")
 
           # Return detailed error message to clients if input validation error
-          error_dict_resp = format_http_response(e.status_code, e.message, success=False)
+          error_dict_resp = self.format_http_response(e.status_code, e.message, success=False)
 
-          return create_zip(error_dict_resp)
+          # Format response into a zip containing json
+          return self.create_error_zip(error_dict_resp)
 
         except Exception as e:
           # Log error from stack
           logging.error(e, exc_info=True)
 
           # Return error message to clients if any other error
-          error_dict_resp = format_http_response(500, "Internal Server Error", success=False)
+          error_dict_resp = self.format_http_response(500, "Internal Server Error", success=False)
 
-          return create_zip(error_dict_resp)
-
-    def process_s100_request(self, response_path: str, s100_folder_path: str, layer: str):
-        # Create S-100 Files from Geojson return
-        if layer == 'S104':
-            logging.info('Creating S-104 Files')
-            s104.S104GeneratorDCF8(
-              response_path,s100_folder_path,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
-            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
-
-        else:
-            logging.info('Creating S-111 Files')
-            s111.S111GeneratorDCF8(
-              response_path,s100_folder_path,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
-            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+          # Format response into a zip containing json
+          return self.create_error_zip(error_dict_resp)
 
 
     def __repr__(self):
         return '<S100Processor> {}'.format(self.name)
 
+    def process_s100_request(self, temp_folder_path: str, layer: str, result: dict):
+        '''
+        Process a s100 request through the s104/s111 generator classes.
+
+        :param response_path: Path to json containing all results (str)
+        :param temp_folder_path: Temp directory path (str)
+        :param layer: Specified layer to create S*** file (i.e. S104 or S111)
+        :param result: Returned results from api request (dict)
+        :returns: S100 folder path that containing output h5 file (str)
+        '''
+        # Create s100 folder to temporarily house the h5 file
+        s100_folder_path = Path(temp_folder_path).joinpath('s100')
+        os.mkdir(s100_folder_path)
+
+        # Create a json containing the output results from the api
+        result_path = os.path.join(temp_folder_path, 'output.json')
+        with open(result_path, 'w', encoding='utf-8') as result_file:
+            json.dump(result, result_file, ensure_ascii=False, indent=4)
+
+        # Create S-100 Files from Geojson return
+        if layer == 'S104':
+            logging.info('Creating S-104 Files')
+            s104.S104GeneratorDCF8(
+              result_path, s100_folder_path,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
+            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+
+        else:
+            logging.info('Creating S-111 Files')
+            s111.S111GeneratorDCF8(
+              result_path, s100_folder_path,'./templates/DCF8_111_111CA0024900N12400W_production.h5'
+            ).create_s100_tiles_from_template('./templates/tiles_grid_level_2.json')
+
+        return s100_folder_path
+
+    def send_api_request(self, layer: str, bbox: list, start_time: str, end_time: str):
+        '''
+        Query pygeoapi database and make request given user validated inputs.
+
+        :param layer: Layer name, i.e. S104/S111 (str)
+        :param bbox: List containing bounding box coordinates (list)
+        :param start_time: Start time for request (str)
+        :param end_time: End time request (str)
+        :returns: Api request result (dict)
+        '''
+        # Send Request to IWLS API
+        if layer == 'S104':
+            # Establish connection to IWLS API
+            api = IwlsApiConnectorWaterLevels()
+        else:
+            api = IwlsApiConnectorCurrents()
+
+        # Pass query to IWLS API
+        return api._get_timeseries_by_boundary(start_time, end_time, bbox)
+
+    def create_success_zip(self, temp_folder_path: str, s100_folder_path: str):
+        '''Create an zip fille containing the response json and the h5 file.
+
+        :param temp_folder_path: Temporary working directory to save files for this session (str)
+        :s100_folder_path: Path to directory (inside of temp dir) containing h5 file (str)
+        :returns: Parsed zip file result (zip)
+        '''
+        # Create response dictionary with a status report for client
+        success_dict_resp = self.format_http_response(200, "OK")
+
+        # Create a json file containing the response
+        with open(Path(s100_folder_path).joinpath(self.response_filename), 'w') as f:
+          json.dump(success_dict_resp, f)
+
+        # Make zip file with output h5 file and json
+        zip_dest = Path(temp_folder_path).joinpath(self.output_dir_name)
+        shutil.make_archive(zip_dest, 'zip', s100_folder_path)
+
+        # Read in zip file
+        with open(zip_dest.with_suffix('.zip'), 'rb') as f:
+            return f.read()
+
+    def create_error_zip(self, error_dict_resp):
+        '''
+        Create the zip file containing the response json
+
+        :param status_code: Error or success code (http status code) (str)
+        :param message: Message detailing outcome/comments (str)
+        :param success: Determine to use success or error protocol (bool)
+        '''
+        # Create temp folder
+        with tempfile.TemporaryDirectory() as temp_folder_path:
+          temp_folder_path = Path(temp_folder_path)
+          output_path = temp_folder_path.joinpath(Path(self.output_dir_name).with_suffix('.zip'))
+
+          # Create response.json containing error message
+          with open(temp_folder_path.joinpath(self.response_filename), 'w') as f:
+            json.dump(error_dict_resp, f)
+
+          # Create zip file
+          with ZipFile(output_path, 'w') as zipf:
+            zipf.write(temp_folder_path.joinpath(self.response_filename), arcname=self.response_filename)
+
+          # Read in zip file
+          with open(output_path, 'rb') as f:
+              value = f.read()
+
+          return 'application/zip', value
+
+    def format_http_response(self, status_code, message, success=True):
+        '''
+        Creates status dict that formats status code and message (eventually gets turned into json).
+
+        :param status_code: Error or success code (http status code) (str)
+        :param message: Message detailing outcome/comments (str)
+        :param success: Determine to use success or error protocol (bool)
+        '''
+        if success:
+          return {"status": "success", "body": { 'code' : status_code, 'message': message}}
+        else:
+          return {"status": "error", "body": { 'code' : status_code, 'message': message}}
+
+    def parse_datetime_text(self, date_text):
+        '''
+        Parse datetime text from user input.
+
+        :param date_text: User specified dates (str)
+        '''
+        try:
+            # Parse datetime and throw specified error if unable to parse
+            return datetime.datetime.strptime(date_text, self.datetime_format)
+        except ValueError:
+            raise InputValidationError(400, f"Incorrect data format, should be {self.datetime_format}")
+
+    def parse_bbox_text(self, bbox_text):
+        '''
+        Parses bounding box coordinates from string
+
+        :param bbox_text: User inputted bounding box (str)
+        :returns: List of valid bounding boxes
+        '''
+        try:
+          # Parse bounding box from string to list
+          bbox = [float(x) for x in bbox_text.split(',')]
+        except ValueError as value_error_:
+          raise InputValidationError(400, "Unable to parse bounding box,\
+             format should be: {self.bbox_format}") from value_error_
+
+        # Ensure that bounding box length contains correct number of coordinate points
+        if len(bbox) != 4:
+          raise InputValidationError(400, "Invalid number of values in bounding box, \
+          should be {self.bbox_format}")
+
+        # Validate lat/lon values
+        if not (-90 <= bbox[1] <= 90) and (-90 <= bbox[3] <= 90):
+          raise InputValidationError(400, "Bounding box latitudes must be between -90 and 90")
+        if not (-180 <= bbox[0] <= 180) and (-180 <= bbox[2] <= 180):
+          raise InputValidationError(400, "Bounding box longitudes must be between -180 and 180")
+
+        return bbox
+
+    def validate_inputs(self, data: dict):
+        """
+        Validates user input
+
+        :param data: User Input, format defined in PROCESS_METADATA (dict)
+        :returns: list of valid bounding boxes and layer name
+        """
+        # Parse input start/end time
+        start_time_datetime = self.parse_datetime_text(data['start_time'])
+        end_time_datetime = self.parse_datetime_text(data['end_time'])
+
+        # Parse input bounding box from coordinates
+        bbox = self.parse_bbox_text(data['bbox'])
+
+        # Extract layer type and ensure it is valid i.e. S104/S111
+        layer = data['layer']
+        if layer != 'S104' and layer != 'S111':
+            raise InputValidationError(400, 'Cannot process without a valid layer name (S104 or S111)')
+
+        # Raise error if requesting more data than the time limit
+        time_delta = (start_time_datetime - end_time_datetime).total_seconds() / 3600
+        if time_delta > 96:
+            raise InputValidationError(400, 'Difference between start time and end time greater than 4 days')
+
+        return bbox, layer
+
 @dataclass
 class InputValidationError(BaseException):
     status_code: int
     message: str
-
-def create_zip(error_dict_resp):
-      response_filename = 'response.json'
-      output_filename = 'response.zip'
-
-      # Create temp file
-      with tempfile.TemporaryDirectory() as folder_path:
-        folder_path = Path(folder_path)
-        output_path = folder_path.joinpath(output_filename)
-
-        # Create response.json containing error message
-        with open(folder_path.joinpath(response_filename), 'w') as f:
-          json.dump(error_dict_resp, f)
-
-        # Create zip file
-        with ZipFile(output_path, 'w') as zipf:
-          zipf.write(folder_path.joinpath(response_filename), arcname=response_filename)
-
-        # Read in zip file
-        with open(output_path, 'rb') as f:
-            value = f.read()
-
-        return 'application/zip', value
-
-def format_http_response(status_code, message, success=True):
-    # Foramt http response
-    if success:
-      return {"status": "success", "body": { 'code' : status_code, 'message': message}}
-    else:
-      return {"status": "error", "body": { 'code' : status_code, 'message': message}}
-
-def parse_datetime_text(date_text, datetime_format="%Y-%m-%dT%H:%M:%SZ"):
-    try:
-        return datetime.datetime.strptime(date_text, datetime_format)
-    except ValueError:
-        raise InputValidationError(400, f"Incorrect data format, should be {datetime_format}")
-
-def parse_bbox_text(bbox_text):
-    # Test bounding box cases
-    try:
-      bbox = [float(x) for x in bbox_text.split(',')]
-    except ValueError as value_error_:
-      raise InputValidationError(400, "bad format") from value_error_
-    if len(bbox) != 4:
-      raise InputValidationError(400, "Invalid number of values in bounding box, \
-      should be: bbox:<longitude>,<latitude>,<longitude>,<latitude>")
-    if not (-90 <= bbox[1] <= 90) and (-90 <= bbox[3] <= 90):
-      raise InputValidationError(400, "Bounding box latitudes must be between -90 and 90")
-    if not (-180 <= bbox[0] <= 180) and (-180 <= bbox[2] <= 180):
-      raise InputValidationError(400, "Bounding box longitudes must be between -180 and 180")
-    return bbox
-
-def validate_inputs(data):
-    start_time_datetime = parse_datetime_text(data['start_time'])
-    end_time_datetime = parse_datetime_text(data['end_time'])
-
-    bbox = parse_bbox_text(data['bbox'])
-
-    layer = data['layer']
-    if layer != 'S104' and layer != 'S111':
-        raise InputValidationError(400, 'Cannot process without a valid layer name (S104 or S111)')
-
-    # Raise error if requesting more data than the time limit
-    time_delta = (start_time_datetime - end_time_datetime).total_seconds() / 3600
-    if time_delta > 96:
-        raise InputValidationError(400, 'Difference between start time and end time greater than 4 days')
-    return bbox, layer

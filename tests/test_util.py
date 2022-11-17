@@ -1,7 +1,11 @@
-import json, requests
-import numpy as np
-import test_data
+import json
+import requests
 import os
+import numpy as np
+
+import test_data
+
+response_json = 'response.json'
 
 ### requests and tear down
 def run_request(request_type):
@@ -27,7 +31,8 @@ def clean_up(test_dir):
     for item in test_dir.glob("*"):
         if item.suffix == ".h5":
             os.remove(item)
-
+        elif item.suffix == response_json:
+            os.remove(item)
 ### test logic
 def check_time_interval_index_attr(time_interval_index, h5_file_attr_names, product_type):
     # If timeRecordIndex attr is 1, timeRecordInterval attr should be present in h5 file
