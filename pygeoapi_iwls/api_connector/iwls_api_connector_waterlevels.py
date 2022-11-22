@@ -1,15 +1,5 @@
 # Standard library imports
-import requests
 import json
-import datetime
-import os
-import uuid
-
-# Packages imports
-from zipfile import ZipFile
-import pandas as pd
-import requests_cache
-import dateutil.parser
 
 # Local imports
 from provider_iwls.api_connector.iwls_api_connector import IwlsApiConnector

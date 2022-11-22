@@ -1,7 +1,9 @@
-import json, requests
-import numpy as np
-import test_data
+import json
+import requests
 import os
+import numpy as np
+
+import test_data
 
 ### requests and tear down
 def run_request(request_type):
@@ -23,9 +25,11 @@ def run_request(request_type):
     return requests.post("http://localhost:5000/processes/s100/execution", headers=headers, data=data)
 
 def clean_up(test_dir):
-    # Filter all filters in test directory with a zip or .h5 extension, then remove
+    # Filter all filters in test directory with a .json or .h5 extension, then remove
     for item in test_dir.glob("*"):
         if item.suffix == ".h5":
+            os.remove(item)
+        elif item.suffix == ".json":
             os.remove(item)
 
 ### test logic

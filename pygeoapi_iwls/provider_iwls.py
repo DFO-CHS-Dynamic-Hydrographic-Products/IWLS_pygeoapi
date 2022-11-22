@@ -1,9 +1,7 @@
 # Standard library imports
-import requests
 import json
 import datetime
 import os
-import requests_cache
 import uuid
 import dateutil.parser
 
@@ -40,8 +38,6 @@ class ProviderIwls(BaseProvider):
         :param identifier: feature id (int)
         :returns: feature collection
         """
-        result = None
-
         # Establish connection to IWLS API
         api = IwlsApiConnectorWaterLevels()
 
@@ -147,7 +143,6 @@ class ProviderIwlsCurrents(ProviderIwls):
     def _provider_get_station_data(self, identifier: int, start_time: str, end_time: str, api: IwlsApiConnectorCurrents):
         """
         Calls _get_station_data in IwlsApiConnectorCurrents class. Used by pygeoapi get method.
-
         :param identifier: station ID (int)
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
