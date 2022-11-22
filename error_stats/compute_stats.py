@@ -1,10 +1,9 @@
+from pygeoapi_iwls.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
 import sqlite3
 import logging
 import math
 import sys
 sys.path.append('../')
-
-from pygeoapi_iwls.iwls_api_connector_waterlevels  import IwlsApiConnectorWaterLevels
 
 
 class Error_db():
