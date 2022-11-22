@@ -100,11 +100,16 @@ class S100GeneratorDCF8():
         """
 
         # Create file from template in working folder
-        s100_path = os.path.join(self.folder_path, filename)
+        assert self.template_path.exists(), \
+            f"Template file: {str(self.template_path)} does not exist"
+        assert self.folder_path.exists(), \
+            f"Folder path to copy template h5 file: {str(self.folder_path)} does not exist"
+        s100_path = self.folder_path.joinpath(filename)
         shutil.copy(self.template_path,s100_path)
         #format JSON data
         data_arrays = self._format_data_arrays(s100_data)
         # Open and update file
+        assert s100_path.exists(), f"Copied h5 template file: {str(s100_path)} does not exist"
         with h5py.File(s100_path, 'r+') as h5_file:
             ### Update General Metadata (File Level) ###
             self._update_general_metadata(h5_file,filename,bbox)

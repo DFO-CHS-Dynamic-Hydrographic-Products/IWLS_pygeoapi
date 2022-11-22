@@ -2,14 +2,11 @@
 import requests
 import json
 import datetime
-import os
-import uuid
 import logging
 import requests_cache
 import dateutil.parser
 
 # Packages imports
-from zipfile import ZipFile
 import pandas as pd
 
 class IwlsApiConnector():
@@ -173,7 +170,6 @@ class IwlsApiConnector():
                 series_data = series_data[['value']]
 
                 return series_data.to_json(date_format='iso')
-
 
     def _get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list,
                                     limit: int, start_index: int):
