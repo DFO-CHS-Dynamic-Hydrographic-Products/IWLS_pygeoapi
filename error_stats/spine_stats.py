@@ -1,10 +1,12 @@
 
-from provider_iwls.api_connector.iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
-import pandas as pd
-import datetime
 import sys
-sys.path.append('../pygeoapi_iwls/')
+sys.path.append('../pygeoapi_iwls/api_connector/')
 print(sys.path)
+from iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+import pandas as pd
+import numpy as np
+import datetime
+
 
 
 class SpineErrors():
@@ -22,7 +24,7 @@ class SpineErrors():
         api = IwlsApiConnectorWaterLevels()
         stns_data = {}
         for i in codes:
-            stn = api.get_station_data(i, start_time, end_time)
+            stn = api._get_station_data(i, start_time, end_time)
             wlo = pd.DataFrame.from_dict(
                 stn['properties']['wlo'], orient='index', columns=['wlo'])
             wlo.index = pd.to_datetime(wlo.index, utc=True)
@@ -69,11 +71,11 @@ class SpineErrors():
             # start_time = start_time
             # end_time = end_time
             # median of differences
-            median_of_diffs = v['diff'].median()
+            median_of_diffs = np.median(v['diff'])
             # Mean Absolute Error
-            mae = v['diff'].abs().mean()
+            mae = np.mean(v['diff'].abs())
             # Root Mean Square Error
-            rmse = ((v['wlo'] - v['spine'])**2).mean()**0.5
+            rmse = np.mean((v['wlo'] - v['spine'])**2)**0.5
             # covariance (Observed-SPINE)
             covariance = v['wlo'].cov(v['spine'])
 
@@ -82,8 +84,8 @@ class SpineErrors():
                                                            end_time, median_of_diffs, mae, rmse, covariance]
             else:
                 errors_df.loc[0] = [station, start_time, end_time,
-                                    median_of_diffs, mae, rmse, covariance]
-
+                                    median_of_diffs, mae, rmse, covariance]                               
+        print(errors_df)
         return errors_df
 
     def compute_daily_errors(self):
@@ -102,6 +104,6 @@ class SpineErrors():
 
 
 errors = SpineErrors().compute_errors(
-    '2022-10-00T00:00:00Z', '2022-10-30T23:59:00Z')
+    '2023-01-02T00:00:00Z', '2023-01-02T23:59:00Z')
 # errors.to_csv('spine_test.csv')
-# print(errors)
+print(errors)
