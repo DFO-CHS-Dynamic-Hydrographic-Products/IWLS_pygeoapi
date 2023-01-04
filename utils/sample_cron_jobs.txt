@@ -1,0 +1,7 @@
+# Sample Cron Jobs using pygeoapi process plugins
+
+# Compute daily statistics for SPINE
+@daily /usr/local/bin/python3  [path_to_server]/error_stats/spine_stats.py
+
+#Get last 48 hours of data for Victoria Harbour every day other day
+0 0 1-31/2 * * curl -X POST "http://localhost:5000/07120/

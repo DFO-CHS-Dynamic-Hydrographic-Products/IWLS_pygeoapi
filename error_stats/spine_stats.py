@@ -8,7 +8,6 @@ import numpy as np
 import datetime
 
 
-
 class SpineErrors():
     def __init__(self):
         self.spine_stations = pd.read_csv('spine_stn.csv', dtype=str)
@@ -105,5 +104,5 @@ class SpineErrors():
 
 errors = SpineErrors().compute_errors(
     '2023-01-02T00:00:00Z', '2023-01-02T23:59:00Z')
-# errors.to_csv('spine_test.csv')
+
 print(errors)
