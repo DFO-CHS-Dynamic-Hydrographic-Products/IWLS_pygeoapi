@@ -6,6 +6,7 @@ from iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
 import pandas as pd
 import numpy as np
 import datetime
+import dateutil
 
 
 class SpineErrors():
@@ -48,14 +49,27 @@ class SpineErrors():
 
         return stns_data
 
-    def compute_errors(self, start_time, end_time):
+    def compute_errors(self, start_time, end_time, output='df'):
         """
         Compute  errors between SPINE and WLO for a user
         defined time frame
         :param start_time:  Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param end_time:  End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
-        :returns: pandas.DataFrame
+        :param output: output format ('df', 'csv' or 'sqlite')
+        :returns: output
         """
+
+        # Check if Start and end time are valid
+        try:
+            dateutil.parser.parse(start_time)
+        except:
+            raise ValueError('invalid date format for start_time')
+
+        try:
+            dateutil.parser.parse(end_time)
+        except:
+            raise ValueError('invalid date format for end_time')
+
         # Request data for station with SPINE time series
         stns_data = self._get_station_data(start_time, end_time)
         # Compute diff between wlo and SPINE
@@ -85,7 +99,20 @@ class SpineErrors():
                 errors_df.loc[0] = [station, start_time, end_time,
                                     median_of_diffs, mae, rmse, covariance]                               
         print(errors_df)
-        return errors_df
+        output = errors_df
+        # Format output
+        if output=='df':
+           output = errors_df
+
+        elif output=='csv':
+            errors_df.to_csv(f'{start_time}.csv')
+
+        elif output=='sqlite':
+            record = Error_Db().add_record(errors_df)
+        else:
+            raise ValueError('output for compute_error must be df, csv or sqlite')
+        output 
+        return output
 
     def compute_daily_errors(self):
         """
@@ -102,7 +129,7 @@ class SpineErrors():
         errors.to_csv(f'{start_time}.csv')
 
 
-errors = SpineErrors().compute_errors(
-    '2023-01-02T00:00:00Z', '2023-01-02T23:59:00Z')
+#errors = SpineErrors().compute_errors(
+#    '2023-01-02T00:00:00Z', '2023-01-02T23:59:00Z')
 
-print(errors)
+#print(errors)
