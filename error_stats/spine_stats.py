@@ -4,6 +4,32 @@ import pandas as pd
 import numpy as np
 import datetime
 import dateutil
+import sqlite3
+import logging
+
+class Error_db_spine():
+
+    def __init__(self):
+        self.db = 'error_statistics_spine.db'
+
+    def add_record_daily_spine(self, error_df):
+        conn = sqlite3.connect(self.db)
+        cur = conn.cursor()
+        for row in error_df.itertuples():
+            sql = (f'INSERT INTO {row["station"]}'
+                f'({row["start_time"]} {row["end_time"]} {row["median_of_diffs"]}'
+                f'{row["MAE"]} {row["RMSE"]} {row["covariance"]} )'
+                f'VALUES')
+                
+            try:
+                cur.execute(sql)
+
+            except sqlite3.Error as error:
+                logging.error(f'{error}')
+
+            finally:
+                if conn:
+                    conn.close
 
 
 class SpineErrors():
@@ -107,7 +133,7 @@ class SpineErrors():
             errors_df.to_csv(f'{start_time}.csv')
 
         elif output_format=='sqlite':
-            record = Error_Db().add_record(errors_df)
+            Error_db_spine().add_record_daily_spine(errors_df)
         else:
             raise ValueError('output for compute_error must be df, csv or sqlite')
 
