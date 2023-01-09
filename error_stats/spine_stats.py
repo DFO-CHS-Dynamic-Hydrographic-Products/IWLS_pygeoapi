@@ -1,8 +1,5 @@
 
-import sys
-sys.path.append('../pygeoapi_iwls/api_connector/')
-print(sys.path)
-from iwls_api_connector_waterlevels import IwlsApiConnectorWaterLevels
+from provider_iwls.iwls_api_connector_waterlevels  import IwlsApiConnectorWaterLevels
 import pandas as pd
 import numpy as np
 import datetime
@@ -20,6 +17,7 @@ class SpineErrors():
         :param end_time:  End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :returns: dict of pandas.DataFrame
         """
+        print('Sending Query to IWLS API')
         codes = self.spine_stations['code'].to_list()
         api = IwlsApiConnectorWaterLevels()
         stns_data = {}
@@ -49,17 +47,17 @@ class SpineErrors():
 
         return stns_data
 
-    def compute_errors(self, start_time, end_time, output='df'):
+    def compute_errors(self, start_time, end_time, output_format='df'):
         """
         Compute  errors between SPINE and WLO for a user
         defined time frame
         :param start_time:  Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param end_time:  End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
-        :param output: output format ('df', 'csv' or 'sqlite')
+        :param output: output format ('dataframe', 'csv' or 'sqlite')
         :returns: output
         """
-
-        # Check if Start and end time are valid
+        
+        # Check if start and end time are valid
         try:
             dateutil.parser.parse(start_time)
         except:
@@ -73,11 +71,12 @@ class SpineErrors():
         # Request data for station with SPINE time series
         stns_data = self._get_station_data(start_time, end_time)
         # Compute diff between wlo and SPINE
+        print('Computing Statistics')
         errors_df = pd.DataFrame(columns=[
                                  'station', 'start_time', 'end_time', 'median_of_diffs', 'MAE', 'RMSE', 'covariance'])
         for k, v in stns_data.items():
-            v = v[['wlo', 'spine']]
-            v['diff'] = v['wlo'] - v['spine']
+            v = v[['wlo', 'spine']].copy()
+            v.loc[:,'diff'] = v['wlo'] - v['spine']
             v = v.dropna()
             # station name
             station = k
@@ -101,17 +100,17 @@ class SpineErrors():
         print(errors_df)
         output = errors_df
         # Format output
-        if output=='df':
+        if output_format=='df':
            output = errors_df
 
-        elif output=='csv':
+        elif output_format=='csv':
             errors_df.to_csv(f'{start_time}.csv')
 
-        elif output=='sqlite':
+        elif output_format=='sqlite':
             record = Error_Db().add_record(errors_df)
         else:
             raise ValueError('output for compute_error must be df, csv or sqlite')
-        output 
+
         return output
 
     def compute_daily_errors(self):
@@ -129,7 +128,7 @@ class SpineErrors():
         errors.to_csv(f'{start_time}.csv')
 
 
-#errors = SpineErrors().compute_errors(
-#    '2023-01-02T00:00:00Z', '2023-01-02T23:59:00Z')
+errors = SpineErrors().compute_errors(
+    '2023-01-08T00:00:00Z', '2023-01-08T23:59:00Z')
 
-#print(errors)
+
