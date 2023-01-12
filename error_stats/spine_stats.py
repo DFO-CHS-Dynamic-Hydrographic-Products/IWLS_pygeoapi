@@ -16,8 +16,8 @@ class Error_db_spine():
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         for row in error_df.itertuples():
-            sql = (f'INSERT INTO {row["station"]}'
-                f'({row["start_time"]} {row["end_time"]} {row["median_of_diffs"]}'
+            sql = (f'INSERT INTO statistics'
+                f'( {row["station"]} {row["start_time"]} {row["end_time"]} {row["median_of_diffs"]}'
                 f'{row["MAE"]} {row["RMSE"]} {row["covariance"]} )'
                 f'VALUES')
                 
