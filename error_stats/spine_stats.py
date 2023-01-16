@@ -7,6 +7,8 @@ import dateutil
 import sqlite3
 import logging
 
+logging.basicConfig(filename="spine_stats.log", level=logging.DEBUG)
+
 class Error_db_spine():
 
     def __init__(self):
