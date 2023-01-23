@@ -196,3 +196,10 @@ class IwlsApiConnector():
         timeseries_data = {"type": "featureCollection"}
 
         return within_lat, within_lon, stations_list, end_index, timeseries_data
+
+    def _station_data_to_csv(self):
+        """
+        Export single station data to a csv file written in the current folder. 
+        Must be implemented by child class.
+        """
+        raise NotImplementedError('Must override station_data_to_csv')
