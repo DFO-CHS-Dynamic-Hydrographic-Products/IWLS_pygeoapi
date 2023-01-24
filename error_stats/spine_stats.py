@@ -7,6 +7,8 @@ import dateutil
 import sqlite3
 import logging
 
+logging.basicConfig(filename="spine_stats.log", level=logging.DEBUG)
+
 class Error_db_spine():
 
     def __init__(self):
@@ -19,7 +21,7 @@ class Error_db_spine():
             sql = (f'INSERT INTO statistics'
                 f'( {row["station"]} {row["start_time"]} {row["end_time"]} {row["median_of_diffs"]}'
                 f'{row["MAE"]} {row["RMSE"]} {row["covariance"]} )'
-                f'VALUES')
+                f' VALUES')
                 
             try:
                 cur.execute(sql)
