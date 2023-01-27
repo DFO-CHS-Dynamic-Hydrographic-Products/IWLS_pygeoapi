@@ -1,5 +1,4 @@
 import pandas as pd
-import csv
 import h5py
 import datetime
 import dateutil
