@@ -3,6 +3,7 @@ import csv
 import h5py
 import datetime
 import dateutil
+import sys
 
 def s100_to_csv(filepath):
     """
@@ -20,8 +21,9 @@ def s100_to_csv(filepath):
             group_path = '/SurfaceCurrent/'
         else:
             raise ValueError('Input must be S-104 or S-111 DFC8 file')
-
         data_df = pd.DataFrame()
+
+        ### S104 Conversion ###
         if group_path == '/WaterLevel/':
             for i in hdf_file['/WaterLevel/']:
                 if i != 'axisName':
@@ -59,6 +61,37 @@ def s100_to_csv(filepath):
                             else:
                                 data_df = pd.concat([data_df, group_df], axis=1)
 
+        ### S111 Conversion ###                      
+        else:
+            for group in hdf_file['/SurfaceCurrent/SurfaceCurrent.01/']:
+                if group != 'Positioning':
+                    # Get Station label
+                    stn_name = hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/'].attrs['stationName']
+                    stn_id = hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/'].attrs['stationIdentification']
+                    stn_label = f'{stn_id}_{stn_name}'
+                    # Get Station data
+                    stn_data = hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/values'][:]
+                    stn_speed = [i[0] for i in stn_data]
+                    stn_direction = [i[1] for i in stn_data]
+                    # Generate Timestamps for index
+                    number_of_times = int(hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/'].attrs['numberOfTimes'])
+                    interval = int(hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/'].attrs['timeRecordInterval'])
+                    start_time = hdf_file[f'/SurfaceCurrent/SurfaceCurrent.01/{group}/'].attrs['startDateTime']
+                    start_time = dateutil.parser.parse(start_time)
+                    end_time = start_time + datetime.timedelta(seconds=((number_of_times*interval)-interval))
+                    timestamps = pd.date_range(start_time,end_time, freq = f'{interval}S')
+
+                    group_df = pd.DataFrame(stn_speed,index=timestamps, columns=[f'{stn_label}_wcs'])
+                    dir_df = pd.DataFrame(stn_direction,index=timestamps, columns=[f'{stn_label}_wcd'])
+                    group_df = pd.concat([group_df, dir_df], axis=1)
+                    if data_df.empty:
+                        data_df = group_df
+                    else:
+                        data_df = pd.concat([data_df, group_df], axis=1)
+
+
+
+
         # Export stations to csv files
         station_list = data_df.columns.values.tolist()
         station_list = list(set([i[0:-4] for i in station_list]))
@@ -70,6 +103,6 @@ def s100_to_csv(filepath):
 
                 
 
+filepath = str(sys.argv[1])
 
-
-s100_to_csv("104_sample.h5")
+s100_to_csv(filepath)
