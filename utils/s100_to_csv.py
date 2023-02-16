@@ -8,11 +8,12 @@ import pandas as pd
 import h5py
 
 
-def s100_to_csv(filepath):
+def s100_to_csv(filepath,diff=False):
     """
     Export timeseries data from S-104 or S-111 DFC8 file
     to csv file(s)
     :params filepath: path to S-104 or S-111 DFC8 file
+    :params diff: if True include difference columns (bool)
     :returns: One csv file per station
     """
 
@@ -115,6 +116,12 @@ def s100_to_csv(filepath):
             station_df = data_df.loc[:, data_df.columns.str.contains(f'{i}')]
             station_df = station_df.rename(columns=lambda x: str(x)[-3:])
             station_df.index.name = 'datetime'
+            # Difference columns if diff=True
+            if diff == True:
+                if station_df['wlf'].dropna().empty:
+                    station_df['wlo-wlf'] = station_df['wlo'] - station_df['wlp']
+                if station_df['wlf'].dropna().empty:
+                    station_df['wlo-wlf'] = station_df['wlo'] - station_df['wlf']
             station_df.to_csv(f'{i}.csv')
 
 
