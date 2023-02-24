@@ -67,7 +67,7 @@ if not stn_residuals_wlf.empty:
 
 if not stn_stats_wlp.empty:
     # wlp Errors
-    stn_stats_wlp.plot.bar(figsize=(15, 10))
+    stn_stats_wlp.plot.bar(figsize=(20, 10))
     plt.title('Errors - WLO/WLP')
     plt.xticks(rotation=30, ha='right')
     plt.xlabel('Stations')
@@ -77,7 +77,7 @@ if not stn_stats_wlp.empty:
     # wlp RMSE
 if not stn_stats_wlf.empty:
     # wlf Errors
-    stn_stats_wlp.plot.bar(figsize=(15, 10))
+    stn_stats_wlp.plot.bar(figsize=(20, 10))
     plt.title('Errors - WLO/WLF')
     plt.xticks(rotation=30, ha='right')
     plt.xlabel('Stations')
