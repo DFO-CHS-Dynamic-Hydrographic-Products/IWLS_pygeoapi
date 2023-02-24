@@ -50,7 +50,7 @@ stn_residuals_wlf = stn_residuals_wlf.dropna(axis=0, how='all')
 if not stn_residuals_wlp.empty:
     stn_residuals_wlp.plot(figsize=(15, 10),ylim =(-1,1))
     plt.title('WLO - WLP Residuals')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=15, ha='right')
     plt.xlabel('Datetime')
     plt.ylabel('Residuals')
     plt.savefig('wlp_residuals.png')
@@ -59,7 +59,7 @@ if not stn_residuals_wlp.empty:
 if not stn_residuals_wlf.empty:
     stn_residuals_wlf.plot(figsize=(15, 10),ylim =(-1,1))
     plt.title('WLO - WLF Residuals')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=15, ha='right')
     plt.xlabel('Datetime')
     plt.ylabel('Residuals')
     plt.savefig('wlf_residuals.png')
@@ -69,7 +69,7 @@ if not stn_stats_wlp.empty:
     # wlp Errors
     stn_stats_wlp.plot.bar(figsize=(20, 10))
     plt.title('Errors - WLO/WLP')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=15, ha='right')
     plt.xlabel('Stations')
     plt.ylabel('Errors')
     plt.savefig('wlp_MAE.png')
@@ -79,7 +79,7 @@ if not stn_stats_wlf.empty:
     # wlf Errors
     stn_stats_wlp.plot.bar(figsize=(20, 10))
     plt.title('Errors - WLO/WLF')
-    plt.xticks(rotation=30, ha='right')
+    plt.xticks(rotation=15, ha='right')
     plt.xlabel('Stations')
     plt.ylabel('Errors')
     plt.savefig('wlf_MAE.png')
