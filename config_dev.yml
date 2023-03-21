@@ -63,16 +63,11 @@ resources:
         keywords:  # list of related keywords
             - observations
             - water level
-        context:  # linked data configuration (see Linked Data section)
-            - datetime: https://schema.org/DateTime
-            - vocab: https://example.com/vocab#
-              stn_id: "vocab:stn_id"
-              value: "vocab:value"
         links:  # list of 1..n related links
-            - type: text/csv  # MIME type
-              rel: canonical  # link relations per https://www.iana.org/assignments/link-relations/link-relations.xhtml
-              title: data  # title
-              href: https://api-iwls.dfo-mpo.gc.ca/  # URL
+            - type: text/html # MIME type
+              rel: external  # link relations per https://www.iana.org/assignments/link-relations/link-relations.xhtml
+              title: IWLS API  # title
+              href: https://api-iwls.dfo-mpo.gc.ca/swagger-ui/index.html # URL
               hreflang: en-US  # language
         extents:  # spatial and temporal extents
             spatial:  # required
@@ -92,10 +87,6 @@ resources:
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
-              format:  # optional default format
-                  name: GeoJSON  # required: format name
-                  mimetype: application/json  # required: format mimetype
-
     iwls_surfacecurrent:
         type: collection  # REQUIRED (collection, process, or stac-collection)
         title: SurfaceCurrent  # title of dataset
@@ -103,16 +94,11 @@ resources:
         keywords:  # list of related keywords
             - observations
             - Surface Currents
-        context:  # linked data configuration (see Linked Data section)
-            - datetime: https://schema.org/DateTime
-            - vocab: https://example.com/vocab#
-              stn_id: "vocab:stn_id"
-              value: "vocab:value"
         links:  # list of 1..n related links
-            - type: text/csv  # MIME type
-              rel: canonical  # link relations per https://www.iana.org/assignments/link-relations/link-relations.xhtml
-              title: data  # title
-              href: https://api-iwls.dfo-mpo.gc.ca/  # URL
+            - type: text/html  # MIME type
+              rel: external  # link relations per https://www.iana.org/assignments/link-relations/link-relations.xhtml
+              title: IWLS API # title
+              href: https://api-iwls.dfo-mpo.gc.ca/swagger-ui/index.html  # URL
               hreflang: en-US  # language
         extents:  # spatial and temporal extents
             spatial:  # required
@@ -127,14 +113,10 @@ resources:
             # for custom built plugins, use the import path (e.g. mypackage.provider.MyProvider)
             # see Plugins section for more information
             - type: feature # underlying data geospatial type: (allowed values are: feature, coverage, record, tile, edr)
-              default: true  # optional: if not specified, the first provider definition is considered the default
               name: provider_iwls.provider_iwls.ProviderIwlsCurrents
               data: https://api-iwls.dfo-mpo.gc.ca/api/  # required: the data filesystem path or URL, depending on plugin setup
               id_field: id  # required for vector data, the field corresponding to the ID
               title_field: id # optional field of which property to display as title/label on HTML pages
-              format:  # optional default format
-                  name: GeoJSON  # required: format name
-                  mimetype: application/json  # required: format mimetype
     s100:
         type: process
         processor:
