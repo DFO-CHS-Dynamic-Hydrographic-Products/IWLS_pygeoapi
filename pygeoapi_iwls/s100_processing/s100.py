@@ -322,11 +322,11 @@ class S100GeneratorDCF8():
         positioning = h5_file.create_group(positioning_path)
 
         # Create the type for geometry values dataset
-        geometry_values_type = np.dtype([('latitude',np.float64), ('longitude',np.float64)])
+        geometry_values_type = np.dtype([('longitude',np.float64),('latitude',np.float64)])
 
         # Create geometry values dataset with lat/lon values
         positioning.create_dataset(
-            'geometryValues',data=list(zip(lat, lon)),dtype=geometry_values_type
+            'geometryValues',data=list(zip(lon, lat)),dtype=geometry_values_type
         )
 
     def _populate_group_metadata(self,
