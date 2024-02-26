@@ -14,7 +14,7 @@ class IwlsApiConnectorWaterLevels(IwlsApiConnector):
     def __init__(self):
         super().__init__()
 
-    def _get_station_data(self, station_code: str, start_time: str, end_time: str, csv=False):
+    def _get_station_data(self, station_code: str, start_time: str, end_time: str, csv=False, hilo=False):
         """
         Get water level timeseries (observations, predictions, forecasts) for a single station.
 
@@ -23,41 +23,60 @@ class IwlsApiConnectorWaterLevels(IwlsApiConnector):
         :param  start_time: Start time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  end_time: End time, ISO 8601 format UTC (e.g.: 2019-11-13T19:18:00Z) (string)
         :param  csv:  Write csv file to disk if True, default = False(bool)
+        :param hilo: If True, return hilo values instead of time series, default = False(bool)
         :returns: GeoJSON containing requested station metadata and available water level time series for specified time range (Json)
         """
         time_ranges_strings, metadata, url = super()._get_station_data(station_code, start_time, end_time)
 
-        # Get Observations, Predictions, Forecasts and SPINE
-        wlo = self._get_timeseries(url,time_ranges_strings,'wlo')
-        wlp = self._get_timeseries(url,time_ranges_strings,'wlp')
-        wlf = self._get_timeseries(url,time_ranges_strings,'wlf')
-        spine = self._get_timeseries(url,time_ranges_strings,'wlf-spine')
+        if hilo == True:
+            # Get hilo series
+            hilo = self._get_timeseries(url,time_ranges_strings,'hilo')
+            # Build Geojson feature for station
+            station_geojson = {'type': 'Feature',
+                                'id': metadata['code'],
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates":[metadata['longitude'],metadata['latitude']]
+                                },
+                                'properties':  {
+                                    'metadata':metadata,
+                                    'hilo':json.loads(hilo)['value'],
+                                    }
+                                }
 
-        # Generate csv file if requested
-        if csv == True:
-            self._station_data_to_csv(station_code, wlo, wlp, wlf, spine)
+        else:
 
-        # Build Geojson feature for station
-        station_geojson = {'type': 'Feature',
-                           'id': metadata['code'],
-                           "geometry": {
-                               "type": "Point",
-                               "coordinates":[metadata['longitude'],metadata['latitude']]
-                           },
-                           'properties':  {
-                               'metadata':metadata,
-                               'wlo':json.loads(wlo)['value'],
-                               'wlp':json.loads(wlp)['value'],
-                               'wlf':json.loads(wlf)['value'],
-                               'spine':json.loads(spine)['value']
-                               }
-                           }
+            # Get Observations, Predictions, Forecasts and SPINE
+            wlo = self._get_timeseries(url,time_ranges_strings,'wlo')
+            wlp = self._get_timeseries(url,time_ranges_strings,'wlp')
+            wlf = self._get_timeseries(url,time_ranges_strings,'wlf')
+            spine = self._get_timeseries(url,time_ranges_strings,'wlf-spine')
+
+            # Generate csv file if requested
+            if csv == True:
+                self._station_data_to_csv(station_code, wlo, wlp, wlf, spine)
+
+            # Build Geojson feature for station
+            station_geojson = {'type': 'Feature',
+                                'id': metadata['code'],
+                                "geometry": {
+                                    "type": "Point",
+                                    "coordinates":[metadata['longitude'],metadata['latitude']]
+                                },
+                                'properties':  {
+                                    'metadata':metadata,
+                                    'wlo':json.loads(wlo)['value'],
+                                    'wlp':json.loads(wlp)['value'],
+                                    'wlf':json.loads(wlf)['value'],
+                                    'spine':json.loads(spine)['value']
+                                    }
+                                }
 
 
         return station_geojson
 
     def _get_timeseries_by_boundary(self, start_time: str, end_time: str, bbox: list,
-                                             limit=10, start_index=0, csv=False):
+                                             limit=10, start_index=0, csv=False, hilo=False):
         """
         Retrieves timeseries data from a bounding box.
 
@@ -67,9 +86,11 @@ class IwlsApiConnectorWaterLevels(IwlsApiConnector):
         :param limit: number of records to return (default 10) (int)
         :param start_index: starting record to return (default 0) (int)
         :param  csv:  Write csv file to disk if True, default = False(bool)
+        :param  csv:  If True, return hilo values instead of time series, default = False(bool)
         :returns: dict of 0..n GeoJSON features
         """
         features = []
+
 
         within_lat, within_lon, stations_list, end_index, timeseries_data = super()._get_timeseries_by_boundary(
             start_time, end_time,bbox, limit, start_index

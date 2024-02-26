@@ -39,7 +39,7 @@ class S100Processor(BaseProcessor):
 
         # Request input formats
         self.datetime_format="%Y-%m-%dT%H:%M:%SZ"
-        self.valid_layer_names = 'S111', 'S104'
+        self.valid_layer_names = 'S111', 'S104', 'S104HILOW'
         self.bbox_format = "\'bbox:<longitude>,<latitude>,<longitude>,<latitude>\'"
         self.datetime_limit = 96
 
@@ -118,14 +118,17 @@ class S100Processor(BaseProcessor):
         :returns: Api request result (dict)
         '''
         # Send Request to IWLS API
-        if layer == 'S104':
+        if layer == 'S104' or 'S104HILOW':
             # Establish connection to IWLS API
             api = IwlsApiConnectorWaterLevels()
         else:
             api = IwlsApiConnectorCurrents()
 
         # Pass query to IWLS API and return geojson
-        return api._get_timeseries_by_boundary(start_time, end_time, bbox)
+        if layer == 'S104HILOW':
+          return api._get_timeseries_by_boundary(start_time, end_time, bbox, hilo=True)
+        else:
+          return api._get_timeseries_by_boundary(start_time, end_time, bbox)
 
     def process_s100_request(self, temp_folder_path: str, layer: str, result: dict):
         '''

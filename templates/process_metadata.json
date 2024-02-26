@@ -21,7 +21,7 @@
     "inputs": {
         "layer": {
             "title": "S100 Layer",
-            "description": "Layer to query, valid input: S104 or S111",
+            "description": "Layer to query, valid input: S104, S104HILOW or S111",
             "schema": {
                 "type": "string"
             },

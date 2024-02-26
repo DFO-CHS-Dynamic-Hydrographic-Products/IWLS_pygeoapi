@@ -149,6 +149,7 @@ class IwlsApiConnector():
                             'wlf-spine' = SPINE Forcast
                             'wcs1' = Observed Surface Currents Speed
                             'wcd1' = Observed Surface Currents Direction
+                            'hilo' = High and Low values per tidal cycle
         returns: series of pairs of time stamps and water level values (json)
         """
         series_data = pd.DataFrame()
