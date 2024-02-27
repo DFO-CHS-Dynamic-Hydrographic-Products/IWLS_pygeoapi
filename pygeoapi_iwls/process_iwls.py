@@ -150,7 +150,7 @@ class S100Processor(BaseProcessor):
             json.dump(result, result_file, ensure_ascii=False, indent=4)
 
         # Create S-100 Files from Geojson return
-        if layer == 'S104':
+        if layer == 'S104' or 'S104HILOW':
             logging.info('Creating S-104 Files')
             s104.S104GeneratorDCF8(
               result_path, s100_folder_path,'./templates/DCF8_009_104CA0024900N12400W_production.h5'
