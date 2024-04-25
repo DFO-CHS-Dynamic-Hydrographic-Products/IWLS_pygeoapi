@@ -42,7 +42,7 @@ class S104GeneratorDCF8(S100GeneratorDCF8):
     def _get_flags(
             self,
             x: float,
-            trend_treshold: float = 0.2):
+            trend_treshold: float = 0.0003):
         """
         Transform slope value to trend flag:
         "STEADY" : 0, "DECREASING" : 1, "INCREASING" : 2, "UNKNOWN" : 3
